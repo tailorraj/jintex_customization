@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include jintex_customization *.css
+recursive-include jintex_customization *.csv
+recursive-include jintex_customization *.html
+recursive-include jintex_customization *.ico
+recursive-include jintex_customization *.js
+recursive-include jintex_customization *.json
+recursive-include jintex_customization *.md
+recursive-include jintex_customization *.png
+recursive-include jintex_customization *.py
+recursive-include jintex_customization *.svg
+recursive-include jintex_customization *.txt
+recursive-exclude jintex_customization *.pyc
