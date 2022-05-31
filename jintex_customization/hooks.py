@@ -102,6 +102,11 @@ app_license = "MIT"
 # 		"on_trash": "method"
 #	}
 # }
+fixtures = [
+	{"dt":"Custom Field", "filters": [["name", "in", ["Item Price-reference_rmb_price","Sales Invoice-calculation_of_item_group_","ToDo-header","Item-category","Customer-remarks","Customer-branch","Item-ahmedabad_bin","Item-bangalore_bin","Item-aliases"]]]},
+	
+
+	]
 
 # Scheduled Tasks
 # ---------------
