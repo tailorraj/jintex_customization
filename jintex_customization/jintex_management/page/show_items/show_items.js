@@ -147,34 +147,40 @@ erpnext.ShowItems = class StockQuery {
 				// '<h6 class="card-subtitle mb-2 text-muted">BLR Reorder Level: ' + blr_reorder + ' Pcs</h6>' +
 				// '<h6 class="card-subtitle mb-2 text-muted">AMD Reorder Level: ' + amd_reorder + ' Pcs</h6>' +
 				// '<h6 class="card-subtitle mb-2 text-muted">Transit Date: <strong>' + i.po_name + '</strong></h6>' +
-				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;"><strong>' + i.bangalore_bin + '</strong><br />';
+				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;font-size: 14px;"><strong>' + i.bangalore_bin + '</strong><br />';
 			
 			if(stk_blr >= blr_reorder){
 				html_content += 
-				'<span style="color:#007500; font-weight: bold;">Stock: ' + stk_blr + ' Pcs </span>';
+				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
 			}
 			else{
 				html_content += 
-				'<span style="color:#FF0000; font-weight: bold;">Stock: ' + stk_blr + ' Pcs </span>';
+				'<span style="color:#FF0000; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
 			}
 			
 			
 			html_content += 
-				'<br />BLR Reorder: ' + blr_reorder + ' Pcs</span><span style="display: inline-block;padding-left: 65px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
+				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 65px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
 
 			if(stk_amd >= amd_reorder){
 				html_content += 
-				'<span style="color:#007500; font-weight: bold;">Stock: ' + stk_amd + ' Pcs </span>';
+				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
 			}
 			else{
 				html_content += 
-				'<span style="color:#FF0000; font-weight: bold;">Stock: ' + stk_amd + ' Pcs </span>';
+				'<span style="color:#FF0000; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+			}
+
+			let require_by = '-'
+			if(i.po_name != '-'){
+				let sc_datetime = new Date(i.po_name)
+				require_by = sc_datetime.getDate() + "-" + (sc_datetime.getMonth() + 1) + "-" + sc_datetime.getFullYear()
 			}
 			
 			html_content +=
-				'<br />AMD Reorder: ' + amd_reorder + ' Pcs </span></p>' +
-				'<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + i.dealer + '</strong><br />' +
-				'Retail Price: <strong>Rs ' + i.retail + '</strong><br />Price3: <strong>Rs 0</strong></span><span style="display: inline-block; padding-left: 50px;">Transit Date: <strong>' + i.po_name + '</strong><br /> Transit Qty: <strong>' + i.po_qty + '</strong><br />' +
+				'<br />AMD Reorder: ' + parseInt(amd_reorder) + ' Pcs </span></p>' +
+				'<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
+				'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs 0</strong></span><span style="display: inline-block; padding-left: 24px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
 				// '<a href="item/'+ i.name +'" class="btn btn-primary stretched-link">View Item</a>' +
 				'</div>' +
 				'</div>' +
@@ -247,22 +253,73 @@ function get_items(item, item_group, category) {
 
 function get_req(elem){
 	var item =  $(elem).data("id");
-	var qty =  $(elem).data("qty");
+	// var qty =  $(elem).data("qty");
 	// console.log(item + " - " + qty)
 
-	try{
-		frappe.call({
-			'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
-			'args': {
-				'product_id': item,
-				'qty': qty,
-			},
-			callback: function(res){
-				// console.log(res.message)
-				if(res.message == "Success"){
-					frappe.msgprint("Material Request Created Successfully!")
-				}
+	pending_qty = 0
+
+	frappe.call({
+		'method': 'jintex_customization.jintex_management.page.show_items.show_items.check_purchase_material',
+		'args': {
+			'product_id':item
+		},
+		callback: function(res){
+			console.log(res)
+			// pending_qty = res.message
+			if(res.message != '0'){
+				frappe.msgprint("Quantity to be Received: " + res.message)
 			}
-		});
-	} catch (e) {reject(e);}
+		}
+	})
+
+	let d = new frappe.ui.Dialog({
+		title: 'Enter Quantity',
+		fields: [
+			{
+				label: 'Qty',
+				fieldname: 'qty',
+				fieldtype: 'Int'
+			}
+		],
+		primary_action_label: 'Submit',
+		primary_action(values) {
+			console.log(values.qty);
+			if(values.qty != null && values.qty != 0){
+				try{
+					frappe.call({
+						'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+						'args': {
+							'product_id': item,
+							'qty': values.qty,
+						},
+						callback: function(res){
+							// console.log(res.message)
+							if(res.message == "Success"){
+								frappe.msgprint("Material Request Created Successfully!")
+							}
+						}
+					});
+				} catch (e) {reject(e);}
+			}
+			d.hide();
+		}
+	});
+	
+	d.show();
+
+	// try{
+	// 	frappe.call({
+	// 		'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+	// 		'args': {
+	// 			'product_id': item,
+	// 			'qty': qty,
+	// 		},
+	// 		callback: function(res){
+	// 			// console.log(res.message)
+	// 			if(res.message == "Success"){
+	// 				frappe.msgprint("Material Request Created Successfully!")
+	// 			}
+	// 		}
+	// 	});
+	// } catch (e) {reject(e);}
 }
