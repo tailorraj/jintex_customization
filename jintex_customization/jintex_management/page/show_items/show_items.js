@@ -47,7 +47,7 @@ erpnext.ShowItems = class StockQuery {
 					label: __('Category'),
 					fieldname: 'category',
 					fieldtype: 'Select',
-					options: ['','1', '2', '3'],
+					options: ['','A', 'B', 'C'],
 					change: async () => {
 						this.fetch_and_render()
 					},
@@ -134,7 +134,7 @@ erpnext.ShowItems = class StockQuery {
 			html_content += '<div class="card mb-3" style="max-width: 380px;">' +
 			// '<div class="row no-gutters">' +
 			//   '<div class="col-md-4" style="margin-top: auto; margin-bottom: auto; padding-left: 20px">' +
-				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid" src="' + i.image + '" class="card-img" alt="...">' +
+				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid " src="' + i.image + '" class="card-img" alt="...">' +
 			//   '</div>' +
 			'<div class="row no-gutters bg-light position-relative">' +
 			  '<div class="col-md-12">' +

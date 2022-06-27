@@ -50,7 +50,7 @@ def get_items(product_id=None, item_group=None, category=None):
         (select si.posting_date from `tabSales Invoice Item` sii left join `tabSales Invoice` si on sii.parent = si.name where si.docstatus = 1 and sii.item_code = i.name order by si.creation desc limit 1) as si_date
         from
         `tabItem` i
-        %(cond)s
+        %(cond)s limit 12
         """ % {"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond},as_dict = True)
 
 @frappe.whitelist()
