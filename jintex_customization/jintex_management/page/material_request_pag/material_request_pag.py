@@ -3,11 +3,8 @@ import json
 from frappe.utils import today
 
 @frappe.whitelist()
-def get_items(product_id=None, item_group=None, category=None):
-    dealer_pricelist = frappe.db.get_single_value('Jintex Configuration', 'dealer_pricelist')
-    retail_pricelist = frappe.db.get_single_value('Jintex Configuration', 'retail_pricelist')
+def get_items(product_id=None, item_group=None, category=None, supplier=None):
     bangalore_warehouse = frappe.db.get_single_value('Jintex Configuration', 'bangalore_warehouse')
-    ahmedabad_warehouse = frappe.db.get_single_value('Jintex Configuration', 'ahmedabad_warehouse')
 
     cond = ""
     if product_id:
@@ -22,6 +19,10 @@ def get_items(product_id=None, item_group=None, category=None):
         cond += " and" 
         cond += " i.category = '" + category + "'"
 
+    if supplier:
+        cond += " and" 
+        cond += " id.default_supplier = '" + supplier + "'"
+
 
     return frappe.db.sql("""
         select
@@ -29,25 +30,24 @@ def get_items(product_id=None, item_group=None, category=None):
         i.item_name,
         IFNULL(i.item_group, '-') as item_group,
         IFNULL(i.category, '-') as category,
-        IFNULL(i.aliases, '-') as aliases,
-        IFNULL(i.bangalore_bin, '-') as bangalore_bin,
-        IFNULL(i.ahmedabad_bin, '-') as ahmedabad_bin,
         i.image,
-        IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(dealer_pricelist)s' and ip.item_code = i.name order by ip.creation desc limit 1), '0') as dealer,
-        IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(retail_pricelist)s' and ip.item_code = i.name  order by ip.creation desc limit 1), '0') as retail,
+        IFNULL(id.default_supplier, '-') as default_supplier,
         IFNULL((select b.actual_qty from `tabBin` b where b.warehouse = '%(bangalore_warehouse)s' and b.item_code = i.name  order by b.creation desc limit 1), '0') as banglore,
-        IFNULL((select b.actual_qty from `tabBin` b where b.warehouse = '%(ahmedabad_warehouse)s' and b.item_code = i.name order by b.creation desc limit 1), '0') as ahmedabad,
-        IFNULL((select ir.warehouse_reorder_level from `tabItem Reorder` ir where ir.parent = i.name and ir.warehouse = '%(bangalore_warehouse)s'), '0') as blr_reorder,
-        IFNULL((select ir.warehouse_reorder_level from `tabItem Reorder` ir where ir.parent = i.name and ir.warehouse = '%(ahmedabad_warehouse)s'), '0') as amd_reorder,
+        (select ir.warehouse_reorder_level from `tabItem Reorder` ir where ir.parent = i.name and ir.warehouse = '%(bangalore_warehouse)s') as blr_reorder,
         IFNULL((select po.schedule_date from `tabPurchase Order Item` poi left join `tabPurchase Order` po on poi.parent = po.name where (po.status = 'To Receive' or po.status = 'To Receive and Bill') and poi.item_code = i.name order by po.creation desc limit 1), '-') as po_name,
         IFNULL((select poi.qty from `tabPurchase Order Item` poi left join `tabPurchase Order` po on poi.parent = po.name where (po.status = 'To Receive' or po.status = 'To Receive and Bill') and poi.item_code = i.name order by po.creation desc limit 1), '0') as po_qty,
-        IFNULL((select si.posting_date from `tabSales Invoice Item` sii left join `tabSales Invoice` si on sii.parent = si.name where si.docstatus = 1 and sii.item_code = i.name order by si.creation desc limit 1), '-') as si_date
+        IFNULL((select poi.rate from `tabPurchase Invoice Item` poi left join `tabPurchase Invoice` po on poi.parent = po.name where (po.docstatus=1) and poi.item_code = i.name order by po.creation desc limit 1), '0') as cny_rate,
+        IFNULL((select poi.base_rate from `tabPurchase Invoice Item` poi left join `tabPurchase Invoice` po on poi.parent = po.name where (po.docstatus=1) and poi.item_code = i.name order by po.creation desc limit 1), '0') as last_purchase_rate,
+        IFNULL((select pi.supplier from `tabPurchase Invoice Item` pii left join `tabPurchase Invoice` pi on pii.parent = pi.name where pi.docstatus = 1 and pii.item_code = i.name order by pi.creation desc limit 1), '-') as pi_supplier,
+        IFNULL((select pii.qty from `tabPurchase Invoice Item` pii left join `tabPurchase Invoice` pi on pii.parent = pi.name where pi.docstatus = 1 and pii.item_code = i.name order by pi.creation desc limit 1), '0') as pi_qty
         from
         `tabItem` i
+        left join `tabItem Default` id on id.parent = i.name
         where
         i.disabled = 0
         %(cond)s
-        """ % {"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond},as_dict = True)
+        limit 10
+        """ % {"bangalore_warehouse":bangalore_warehouse, "cond":cond},as_dict = True)
 
 @frappe.whitelist()
 def send_material_request(product_id, qty):
@@ -88,8 +88,5 @@ def check_purchase_material(product_id):
     # data = frappe.db.sql("select sum(poi.qty) as qty from `tabPurchase Order Item` poi left join `tabPurchase Order` po on po.name = poi.parent where (po.status = 'To Receive and Bill' or po.status = 'To Receive') and poi.item_code = %s group by poi.item_code", (product_id), as_dict = True)
     data = frappe.db.sql("select (sum(mri.qty) - sum(mri.received_qty)) as qty from `tabMaterial Request Item` mri where mri.item_code = %s group by mri.item_code", (product_id), as_dict = True)
 
-
     if data:
         return data[0].qty
-    else:
-        return 0
