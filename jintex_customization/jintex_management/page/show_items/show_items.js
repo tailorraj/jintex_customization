@@ -259,7 +259,7 @@ function get_req(elem){
 	pending_qty = 0
 
 	frappe.call({
-		'method': 'jintex_customization.jintex_management.page.show_items.show_items.check_purchase_material',
+		'method': 'jintex_customization.jintex_management.page.material_request_pag.material_request_pag.check_purchase_material',
 		'args': {
 			'product_id':item
 		},

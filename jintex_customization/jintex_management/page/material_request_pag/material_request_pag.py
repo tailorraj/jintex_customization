@@ -86,7 +86,7 @@ def send_material_request(product_id, qty):
 @frappe.whitelist()
 def check_purchase_material(product_id):
     # data = frappe.db.sql("select sum(poi.qty) as qty from `tabPurchase Order Item` poi left join `tabPurchase Order` po on po.name = poi.parent where (po.status = 'To Receive and Bill' or po.status = 'To Receive') and poi.item_code = %s group by poi.item_code", (product_id), as_dict = True)
-    data = frappe.db.sql("select (sum(mri.qty) - sum(mri.received_qty)) as qty from `tabMaterial Request Item` mri where mri.item_code = %s group by mri.item_code", (product_id), as_dict = True)
+    data = frappe.db.sql("select (sum(mri.qty) - sum(mri.received_qty)) as qty from `tabMaterial Request Item` mri inner join `tabMaterial Request` mr on mr.name = mri.parent where mri.item_code = %s and mr.docstatus!=2 and mr.status != 'Stopped' group by mri.item_code", (product_id), as_dict = True)
 
     if data:
         return data[0].qty
