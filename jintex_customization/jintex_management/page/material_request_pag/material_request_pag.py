@@ -90,3 +90,5 @@ def check_purchase_material(product_id):
 
     if data:
         return data[0].qty
+    else:
+        return 0
