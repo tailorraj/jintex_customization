@@ -91,4 +91,8 @@ def check_purchase_material(product_id):
     if data:
         return data[0].qty
     else:
-        return 0
+        data_po = frappe.db.sql("select (sum(poi.qty) - sum(received_qty)) as qty from `tabPurchase Order Item` poi left join `tabPurchase Order` po on po.name = poi.parent where (po.status = 'To Receive and Bill' or po.status = 'To Receive' or po.status = 'Draft') and po.docstatus!=2 and poi.item_code = %s group by poi.item_code", (product_id), as_dict = True)
+        if data_po:
+            return data_po[0].qty
+        else:
+            return 0
