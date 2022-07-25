@@ -31,7 +31,8 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Sales Invoice" : "custom_scripts/sales_invoice.js",
+"Material Request":"custom_scripts/material_request.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -104,7 +105,7 @@ app_license = "MIT"
 
 fixtures = [
 	{"dt":"Custom Field", "filters": [["name", "in", ["Item Price-reference_rmb_price","Sales Invoice-calculation_of_item_group_","ToDo-header","Item-category","Customer-remarks","Customer-branch","Item-ahmedabad_bin","Item-bangalore_bin","Item-aliases"]]]},
-	
+	{"dt":"Property Setter", "filters": [["name", "in", ["Item-main-search_fields"]]]},
 	]
 
 # Scheduled Tasks
