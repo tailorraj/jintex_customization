@@ -47,7 +47,7 @@ erpnext.ShowItems = class StockQuery {
 					label: __('Category'),
 					fieldname: 'category',
 					fieldtype: 'Select',
-					options: ['','1', '2', '3'],
+					options: ['','A', 'B', 'C'],
 					change: async () => {
 						this.fetch_and_render()
 					},
