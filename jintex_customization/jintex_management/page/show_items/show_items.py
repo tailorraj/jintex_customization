@@ -3,7 +3,7 @@ import json
 from frappe.utils import today
 
 @frappe.whitelist()
-def get_items(product_id=None, item_group=None, category=None):
+def get_items(product_id=None, item_group=None, category=None, offset=0, limit=15):
     dealer_pricelist = frappe.db.get_single_value('Jintex Configuration', 'dealer_pricelist')
     retail_pricelist = frappe.db.get_single_value('Jintex Configuration', 'retail_pricelist')
     bangalore_warehouse = frappe.db.get_single_value('Jintex Configuration', 'bangalore_warehouse')
@@ -46,8 +46,9 @@ def get_items(product_id=None, item_group=None, category=None):
         `tabItem` i
         where
         i.disabled = 0
-        %(cond)s limit 12
-        """ % {"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond},as_dict = True)
+        %(cond)s
+        limit %(limit)s offset %(offset)s
+        """ % {"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond, "offset":offset, "limit": limit},as_dict = True)
 
 @frappe.whitelist()
 def send_material_request(product_id, qty):

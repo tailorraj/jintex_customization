@@ -23,8 +23,8 @@ erpnext.ShowItems = class StockQuery {
 			}
 		})
 		.then(count => {
-			console.log(Math.ceil(count/12))
-			total_page = Math.ceil(count/12)
+			console.log(Math.ceil(count/15))
+			total_page = Math.ceil(count/15)
 			
 			var i = 1
 			while(i <= total_page){
@@ -96,6 +96,14 @@ erpnext.ShowItems = class StockQuery {
 					fieldtype: 'Section Break'
 				},
 				{
+					label:"Page",
+					fieldtype: 'HTML',
+					fieldname: 'page_str'
+				},
+				{
+					fieldtype: 'Column Break'
+				},
+				{
 					// label:"Pages",
 					fieldtype: 'Select',
 					options: page_array,
@@ -117,6 +125,15 @@ erpnext.ShowItems = class StockQuery {
 				{
 					fieldtype: 'Column Break'
 				},
+				{
+					fieldtype: 'Select',
+					options: [15, 30, 45, 60],
+					default: 15,
+					fieldname: 'page_limit',
+					change: async () => {
+						this.fetch_and_render()
+					},
+				},
 			],
 			body: this.page.body
 		});
@@ -129,18 +146,20 @@ erpnext.ShowItems = class StockQuery {
 		var item_group = this.form.get_value("item_group");
 		var category = this.form.get_value("category");
 		var supplier = this.form.get_value("supplier");
+		var limit = this.form.get_value("page_limit");
 		var offset_value = this.form.get_value("page_no");
 		var offset = 0;
-		if(offset_value != 0){
-			offset = (12 * (offset_value - 1))
+		if(offset_value == null){
+			offset_value = 1;
 		}
-		console.log("Offset:" + offset)
-		this.set_items(item_code, item_group, category, supplier, offset)
+		offset = (limit * (offset_value - 1))
+		console.log("Offset:" + offset + " Offset_Value: " + offset_value)
+		this.set_items(item_code, item_group, category, supplier, offset, offset_value, limit)
 	}
 
-	async set_items(item_code, item_group, category, supplier, offset){
+	async set_items(item_code, item_group, category, supplier, offset, offset_value, limit){
 
-		var res = await get_items(item_code, item_group, category, supplier, offset)
+		var res = await get_items(item_code, item_group, category, supplier, offset, limit)
 		console.log(res)
 
 		
@@ -185,9 +204,10 @@ erpnext.ShowItems = class StockQuery {
 			}
 
 			let require_by = '-'
+			const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 			if(i.po_name != '-'){
 				let sc_datetime = new Date(i.po_name)
-				require_by = sc_datetime.getDate() + "-" + (sc_datetime.getMonth() + 1) + "-" + sc_datetime.getFullYear()
+				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth() + 1)] + "-" + sc_datetime.getFullYear()
 			}
 			
 			html_content += '<p class="card-text border-bottom border-dark">' + 
@@ -225,26 +245,7 @@ erpnext.ShowItems = class StockQuery {
 			j += 1;
 		})
 
-		var total_page = 0
-
-		await frappe.db.count('Item', {
-			filters: {
-				disabled: 0
-			}
-		})
-		.then(count => {
-			console.log(Math.ceil(count/12))
-			total_page = Math.ceil(count/12)
-		})
-
-		html_content += '</div><span>Page 1/' + total_page + '</span>&nbsp;&nbsp;';
-		html_content += '<select id="pages" name="pages">';
-	  	var page = 1
-		while(page <= total_page){
-			html_content += '<option value="'+ page +'">' + page + '</option>';
-			page ++;
-		}
-		html_content += '</select>';
+		
 		html_content += '<button onclick="topFunction()" id="to_top" title="Go to top" style="position: fixed; bottom: 20px; right: 30px; z-index: 99; font-size: 18px; border: medium none; outline: currentcolor none medium; background-color: red; color: white; cursor: pointer; padding: 5px; border-radius: 4px; display: none;">Top</button>';
 		html_content += '<script>' +
 		//Get the button
@@ -281,11 +282,37 @@ erpnext.ShowItems = class StockQuery {
 				
 			// '</tr>';
 
-		this.form.get_field('get_items').html(html_content);		
+		var total_page = 0
+		var page_content = ""
+
+		await frappe.db.count('Item', {
+			filters: {
+				disabled: 0
+			}
+		})
+		.then(count => {
+			console.log(Math.ceil(count/limit))
+			total_page = Math.ceil(count/limit)
+		})
+
+		
+		var page = 1
+		var page_no = []
+		while(page <= total_page){
+			page_no.push(page)
+			page ++;
+		}
+
+		page_content += '</div><span>Page ' + offset_value + '/' + total_page + '</span>';
+
+		this.form.get_field('get_items').html(html_content);
+		this.form.get_field('page_str').html(page_content);
+		this.form.set_df_property("page_no", "options", page_no);
+		// this.form.get_field('page_no').append($('<option>').val('head').text('Head'));
 	}
 }
 
-function get_items(item, item_group, category, supplier, offset) {
+function get_items(item, item_group, category, supplier, offset, limit) {
 	return new Promise(function(resolve, reject){
 		try{
 			frappe.call({
@@ -295,7 +322,8 @@ function get_items(item, item_group, category, supplier, offset) {
 					'item_group': item_group,
 					'category': category,
 					'supplier': supplier,
-					'offset': offset
+					'offset': offset, 
+					'limit': limit
 				},
 				callback: resolve
 			});

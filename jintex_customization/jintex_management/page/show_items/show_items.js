@@ -14,7 +14,25 @@ erpnext.ShowItems = class StockQuery {
 		this.make_form();
 	}
 
-	make_form() {
+	async make_form() {
+		var total_page = 0
+		var page_array = []
+		await frappe.db.count('Item', {
+			filters: {
+				disabled: 0
+			}
+		})
+		.then(count => {
+			console.log(Math.ceil(count/15))
+			total_page = Math.ceil(count/15)
+			
+			var i = 1
+			while(i <= total_page){
+				page_array.push(i)
+				i++;
+			} 
+		})
+
 		this.form = new frappe.ui.FieldGroup({
 			fields: [
 				{
@@ -63,6 +81,45 @@ erpnext.ShowItems = class StockQuery {
 				{
 					fieldtype: 'Section Break'
 				},
+				{
+					label:"Page",
+					fieldtype: 'HTML',
+					fieldname: 'page_str'
+				},
+				{
+					fieldtype: 'Column Break'
+				},
+				{
+					// label:"Pages",
+					fieldtype: 'Select',
+					options: page_array,
+					default: 1,
+					fieldname: 'page_no',
+					change: async () => {
+						this.fetch_and_render()
+					},
+				},
+				{
+					fieldtype: 'Column Break'
+				},
+				{
+					fieldtype: 'Column Break'
+				},
+				{
+					fieldtype: 'Column Break'
+				},
+				{
+					fieldtype: 'Column Break'
+				},
+				{
+					fieldtype: 'Select',
+					options: [15, 30, 45, 60],
+					default: 15,
+					fieldname: 'page_limit',
+					change: async () => {
+						this.fetch_and_render()
+					},
+				},
 			],
 			body: this.page.body
 		});
@@ -73,12 +130,20 @@ erpnext.ShowItems = class StockQuery {
 		var item_code = this.form.get_value("item_code");
 		var item_group = this.form.get_value("item_group");
 		var category = this.form.get_value("category");
-		this.set_items(item_code, item_group, category)
+		var limit = this.form.get_value("page_limit");
+		var offset_value = this.form.get_value("page_no");
+		var offset = 0;
+		if(offset_value == null){
+			offset_value = 1;
+		}
+		offset = (limit * (offset_value - 1))
+		console.log("Offset:" + offset)
+		this.set_items(item_code, item_group, category, offset, offset_value, limit)
 	}
 
-	async set_items(item_code, item_group, category){
+	async set_items(item_code, item_group, category, offset, offset_value, limit){
 
-		var res = await get_items(item_code, item_group, category)
+		var res = await get_items(item_code, item_group, category, offset, limit)
 		console.log(res)
 
 		
@@ -160,7 +225,7 @@ erpnext.ShowItems = class StockQuery {
 			
 			
 			html_content += 
-				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 65px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
+				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 55px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
 
 			if(stk_amd >= amd_reorder){
 				html_content += 
@@ -172,15 +237,16 @@ erpnext.ShowItems = class StockQuery {
 			}
 
 			let require_by = '-'
+			const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 			if(i.po_name != '-'){
 				let sc_datetime = new Date(i.po_name)
-				require_by = sc_datetime.getDate() + "-" + (sc_datetime.getMonth() + 1) + "-" + sc_datetime.getFullYear()
+				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth() + 1)] + "-" + sc_datetime.getFullYear()
 			}
 			
 			html_content +=
 				'<br />AMD Reorder: ' + parseInt(amd_reorder) + ' Pcs </span></p>' +
 				'<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
-				'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs 0</strong></span><span style="display: inline-block; padding-left: 24px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
+				'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs 0</strong></span><span style="display: inline-block; padding-left: 18px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
 				// '<a href="item/'+ i.name +'" class="btn btn-primary stretched-link">View Item</a>' +
 				'</div>' +
 				'</div>' +
@@ -231,11 +297,36 @@ erpnext.ShowItems = class StockQuery {
 				
 			// '</tr>';
 
-		this.form.get_field('get_items').html(html_content);		
+		var total_page = 0
+		var page_content = ""
+
+		await frappe.db.count('Item', {
+			filters: {
+				disabled: 0
+			}
+		})
+		.then(count => {
+			console.log(Math.ceil(count/limit))
+			total_page = Math.ceil(count/limit)
+		})
+
+		
+		var page = 1
+		var page_no = []
+		while(page <= total_page){
+			page_no.push(page)
+			page ++;
+		}
+
+		page_content += '</div><span>Page ' + offset_value + '/' + total_page + '</span>';
+
+		this.form.get_field('get_items').html(html_content);
+		this.form.get_field('page_str').html(page_content);
+		this.form.set_df_property("page_no", "options", page_no);	
 	}
 }
 
-function get_items(item, item_group, category) {
+function get_items(item, item_group, category, offset, limit) {
 	return new Promise(function(resolve, reject){
 		try{
 			frappe.call({
@@ -244,6 +335,8 @@ function get_items(item, item_group, category) {
 					'product_id': item,
 					'item_group': item_group,
 					'category': category,
+					'offset': offset, 
+					'limit': limit
 				},
 				callback: resolve
 			});
