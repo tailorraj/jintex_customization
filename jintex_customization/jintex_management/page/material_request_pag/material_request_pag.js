@@ -207,7 +207,7 @@ erpnext.ShowItems = class StockQuery {
 			const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 			if(i.po_name != '-'){
 				let sc_datetime = new Date(i.po_name)
-				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth() + 1)] + "-" + sc_datetime.getFullYear()
+				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth())] + "-" + sc_datetime.getFullYear()
 			}
 			
 			html_content += '<p class="card-text border-bottom border-dark">' + 
