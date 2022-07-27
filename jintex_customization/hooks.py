@@ -104,7 +104,7 @@ doctype_js = {"Sales Invoice" : "custom_scripts/sales_invoice.js",
 # }
 
 fixtures = [
-	{"dt":"Custom Field", "filters": [["name", "in", ["Item Price-reference_rmb_price","Sales Invoice-calculation_of_item_group_","ToDo-header","Item-category","Customer-remarks","Customer-branch","Item-ahmedabad_bin","Item-bangalore_bin","Item-aliases"]]]},
+	{"dt":"Custom Field", "filters": [["name", "in", ["Item Price-reference_rmb_price","Sales Invoice-calculation_of_item_group_","ToDo-header","Item-category","Customer-remarks","Customer-branch","Item-ahmedabad_bin","Item-bangalore_bin","Item-aliases","Material Request Item-item_category","Material Request-fetch_supplier_data","Material Request Item-supplier_name"]]]},
 	{"dt":"Property Setter", "filters": [["name", "in", ["Item-main-search_fields"]]]},
 	]
 
