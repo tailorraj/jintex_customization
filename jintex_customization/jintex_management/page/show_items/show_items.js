@@ -213,8 +213,8 @@ erpnext.ShowItems = class StockQuery {
 				// '<h6 class="card-subtitle mb-2 text-muted">AMD Reorder Level: ' + amd_reorder + ' Pcs</h6>' +
 				// '<h6 class="card-subtitle mb-2 text-muted">Transit Date: <strong>' + i.po_name + '</strong></h6>' +
 				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;font-size: 14px;"><strong>' + i.bangalore_bin + '</strong><br />';
-			
-			if(stk_blr >= blr_reorder){
+
+			if(parseInt(stk_blr) >= parseInt(blr_reorder)){
 				html_content += 
 				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
 			}
@@ -227,7 +227,7 @@ erpnext.ShowItems = class StockQuery {
 			html_content += 
 				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 55px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
 
-			if(stk_amd >= amd_reorder){
+			if(parseInt(stk_amd) >= parseInt(amd_reorder)){
 				html_content += 
 				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
 			}
