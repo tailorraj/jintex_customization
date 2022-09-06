@@ -9,18 +9,18 @@ class PriceUpdateTool(Document):
 	@frappe.whitelist()
 	def create_pricelist(self):
 		# Test Site price List
-		dealer = "Selling Price 1 (Dealer)"
-		retail = "Selling Price 2 (Retail)"
-		price3 = "Selling Price 3 (Branch)"
-		branch = "Branch"
-		alpha = "Alpha"
-
-		# Original Site Price List
-		# dealer = "Dealer"
-		# retail = "Retail"
-		# price3 = "Pricelist 3"
+		# dealer = "Selling Price 1 (Dealer)"
+		# retail = "Selling Price 2 (Retail)"
+		# price3 = "Selling Price 3 (Branch)"
 		# branch = "Branch"
 		# alpha = "Alpha"
+
+		# Original Site Price List
+		dealer = "Dealer"
+		retail = "Retail"
+		price3 = "Pricelist 3"
+		branch = "Branch"
+		alpha = "Alpha"
 
 		for item in self.price_list:
 			count = 1
