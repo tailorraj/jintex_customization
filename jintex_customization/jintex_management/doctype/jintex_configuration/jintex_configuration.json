@@ -9,7 +9,8 @@
   "bangalore_warehouse",
   "ahmedabad_warehouse",
   "dealer_pricelist",
-  "retail_pricelist"
+  "retail_pricelist",
+  "pricelist_3"
  ],
  "fields": [
   {
@@ -35,12 +36,18 @@
    "fieldtype": "Link",
    "label": "Retail Pricelist",
    "options": "Price List"
+  },
+  {
+   "fieldname": "pricelist_3",
+   "fieldtype": "Link",
+   "label": "Pricelist 3",
+   "options": "Price List"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-05-31 17:18:41.182983",
+ "modified": "2022-09-02 17:22:41.872708",
  "modified_by": "Administrator",
  "module": "Jintex Management",
  "name": "Jintex Configuration",
