@@ -9,7 +9,8 @@ def get_items(product_id=None, item_group=None, category=None, supplier=None, of
     cond = ""
     if product_id:
         product_id = '%' + product_id + '%'
-        cond += "and (i.item_name like '" + product_id + "' or i.description like '" + product_id + "' or i.bangalore_bin like '" + product_id + "' or i.ahmedabad_bin like '" + product_id + "' or i.aliases like '" + product_id + "')"
+        # cond += "and (i.item_name like '" + product_id + "' or i.description like '" + product_id + "' or i.bangalore_bin like '" + product_id + "' or i.ahmedabad_bin like '" + product_id + "' or i.aliases like '" + product_id + "')"
+        cond += "and (i.item_name like '" + product_id + "' or i.description like '" + product_id + "' or i.bangalore_bin like '" + product_id + "' or i.ahmedabad_bin like '" + product_id + "' or i.aliases like '" + product_id + "' or i.jintex_item_codes like '" + product_id + "')"
     
     if item_group:
         cond += " and" 
@@ -28,6 +29,7 @@ def get_items(product_id=None, item_group=None, category=None, supplier=None, of
         select
         i.name,
         i.item_name,
+        i.jintex_item_codes,
         IFNULL(i.item_group, '-') as item_group,
         IFNULL(i.category, '-') as category,
         i.image,
