@@ -1,7 +1,7 @@
-frappe.pages['material-request-pag'].on_page_load = function(wrapper) {
+frappe.pages['show-items'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Material Request Page',
+		title: 'Inventory Report Card View',
 		single_column: true
 	});
 
@@ -32,8 +32,6 @@ erpnext.ShowItems = class StockQuery {
 				i++;
 			} 
 		})
-
-		console.log(page_array)
 
 		this.form = new frappe.ui.FieldGroup({
 			fields: [
@@ -71,19 +69,7 @@ erpnext.ShowItems = class StockQuery {
 					change: async () => {
 						this.fetch_and_render()
 					},
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					label: __('Supplier'),
-					fieldname: 'supplier',
-					fieldtype: 'Link',
-					options: 'Supplier',
-					change: async () => {
-						this.fetch_and_render()
-					},
-				},
+				},	
 				{
 					fieldtype: 'Section Break'
 				},
@@ -139,13 +125,11 @@ erpnext.ShowItems = class StockQuery {
 		});
 		this.form.make();
 		this.fetch_and_render();
-		console.log(this.form);
 	}
-	fetch_and_render = function(){
+	fetch_and_render(){
 		var item_code = this.form.get_value("item_code");
 		var item_group = this.form.get_value("item_group");
 		var category = this.form.get_value("category");
-		var supplier = this.form.get_value("supplier");
 		var limit = this.form.get_value("page_limit");
 		var offset_value = this.form.get_value("page_no");
 		var offset = 0;
@@ -153,13 +137,13 @@ erpnext.ShowItems = class StockQuery {
 			offset_value = 1;
 		}
 		offset = (limit * (offset_value - 1))
-		console.log("Offset:" + offset + " Offset_Value: " + offset_value)
-		this.set_items(item_code, item_group, category, supplier, offset, offset_value, limit)
+		console.log("Offset:" + offset)
+		this.set_items(item_code, item_group, category, offset, offset_value, limit)
 	}
 
-	async set_items(item_code, item_group, category, supplier, offset, offset_value, limit){
+	async set_items(item_code, item_group, category, offset, offset_value, limit){
 
-		var res = await get_items(item_code, item_group, category, supplier, offset, limit)
+		var res = await get_items(item_code, item_group, category, offset, limit)
 		console.log(res)
 
 		
@@ -174,6 +158,10 @@ erpnext.ShowItems = class StockQuery {
 				html_content += '</div>' + 
 				'<div class="card-deck" style= "margin-top: 10px">';
 			}
+			var stk_amd = 0
+			if(i.ahmedabad != null){
+				stk_amd = i.ahmedabad
+			}
 
 			var stk_blr = 0
 			if(i.banglore != null){
@@ -185,24 +173,67 @@ erpnext.ShowItems = class StockQuery {
 				blr_reorder = i.blr_reorder
 			}
 
-			let item_name = i.name
-			item_name = item_name.replaceAll("/", "%2F")
+			var amd_reorder = 0
+			if(i.amd_reorder != null){
+				amd_reorder = i.amd_reorder
+			}
+
+			// html_content +=	'<div class="card" style="width: 18rem;">' +
+			// 	'<div class="card-body">' +
+			// 	'<div class="d-flex flex-center me-5 pt-2"><img src="'+ i.image +'" alt="" width="125" height="125"></div>' +
+			// 	'<div class="d-flex flex-column content-justify-center w-100">' +
+			// 	'<h5 class="card-title">' + i.item_name + '</h5>' +
+			// 	'<h6 class="card-subtitle mb-2 text-muted">Group: ' + i.item_group + '</h6>' +
+			// 	'<h6 class="card-subtitle mb-2 text-muted">Category: ' + i.category + '</h6>' +
+			// 	'<h6 class="card-subtitle mb-2 text-muted">Reorder Level: 20 Pcs</h6>' +
+			// 	'<p class="card-text"> ' + i.bangalore_bin + '<br />' +
+			// 	'Retail Price: Stock: ' + stk_blr + ' Pcs</p>' +
+			// 	'<p class="card-text"> ' + i.ahmedabad_bin + '<br />' +
+			// 	'Retail Price: Stock: ' + stk_amd + ' Pcs</p>' +
+			// 	'<p class="card-text">Dealer Price: Rs ' + i.dealer + '<br />' +
+			// 	'Retail Price: Rs ' + i.retail + '</p>' +
+			// 	'</div>' +
+			// 	'</div>' +
+			// '</div>';
 
 			html_content += '<div class="card mb-3" style="max-width: 380px;">' +
-				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid" src="' + i.image + '" class="card-img" alt="...">' +
+			// '<div class="row no-gutters">' +
+			//   '<div class="col-md-4" style="margin-top: auto; margin-bottom: auto; padding-left: 20px">' +
+				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid " src="' + i.image + '" class="card-img" alt="...">' +
+			//   '</div>' +
 			'<div class="row no-gutters bg-light position-relative">' +
 			  '<div class="col-md-12">' +
 				'<div class="card-body">' +
-				// '<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
-				'<h5 class="card-title"><a href="item/'+ item_name +'"><strong>' + i.item_name + '</strong></a></h5>' +
+				'<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Group: <strong>' + i.item_group + '</strong></h6>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Category: <strong>' + i.category + '</strong></h6>' +
-				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;"><strong>Purchase: CNY '+ parseFloat(i.cny_rate).toFixed(2) +'</strong><br />' +
-				'<strong>Cost: Rs ' + parseFloat(i.last_purchase_rate).toFixed(2) + '</strong></span>';
-			if(blr_reorder <= stk_blr){
-				html_content += '<span style="display: inline-block;padding-left: 65px;"><span style="color:#007500; font-weight: bold;">Stock: ' + parseInt(stk_blr) + ' Pcs </span></span></p>';
-			}else{
-				html_content += '<span style="display: inline-block;padding-left: 65px;"><span style="color:#FF0000; font-weight: bold;">Stock: ' +  parseInt(stk_blr) + ' Pcs </span></span></p>';
+				'<h6 class="card-subtitle mb-2 text-muted">Aliases: <strong>' + i.aliases + '</strong></h6>' +
+				'<h6 class="card-subtitle mb-2 text-muted">Sales Invoice: <strong>' + i.si_date + '</strong></h6>' +
+				// '<h6 class="card-subtitle mb-2 text-muted">BLR Reorder Level: ' + blr_reorder + ' Pcs</h6>' +
+				// '<h6 class="card-subtitle mb-2 text-muted">AMD Reorder Level: ' + amd_reorder + ' Pcs</h6>' +
+				// '<h6 class="card-subtitle mb-2 text-muted">Transit Date: <strong>' + i.po_name + '</strong></h6>' +
+				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;font-size: 14px;"><strong>' + i.bangalore_bin + '</strong><br />';
+
+			if(parseInt(stk_blr) >= parseInt(blr_reorder)){
+				html_content += 
+				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+			}
+			else{
+				html_content += 
+				'<span style="color:#FF0000; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+			}
+			
+			
+			html_content += 
+				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 55px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
+
+			if(parseInt(stk_amd) >= parseInt(amd_reorder)){
+				html_content += 
+				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+			}
+			else{
+				html_content += 
+				'<span style="color:#FF0000; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
 			}
 
 			let require_by = '-'
@@ -212,31 +243,17 @@ erpnext.ShowItems = class StockQuery {
 				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth())] + "-" + sc_datetime.getFullYear()
 			}
 			
-			html_content += '<p class="card-text border-bottom border-dark">' + 
-				'<span>Reorder Level: '+ parseInt(blr_reorder) +' Pcs</span> <br />' +
-				'<span><strong>Transit Date: '+ require_by +'</strong></span> <br />' +
-				'<span><strong>Transit Quantity: '+ parseInt(i.po_qty) +' Pcs</strong></span>' +
-				'</p>' +
-				'<p class="card-text">' + 
-				'<span>Default Supplier: '+ i.default_supplier +'</span> <br />' +
-				'<span>Last Vendor: '+ i.pi_supplier +'</span> <br />' +
-				'<span>Last Quantity: '+ parseInt(i.pi_qty) +' Pcs</span>' +
-				'</p>';
-
-
-			
 			html_content +=
-				// '<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + i.dealer + '</strong><br />' +
-				// 'Retail Price: <strong>Rs ' + i.retail + '</strong><br />Price3: <strong>Rs 0</strong></span><span style="display: inline-block; padding-left: 50px;">Transit Date: <strong>' + i.po_name + '</strong><br /> Transit Qty: <strong>' + i.po_qty + '</strong><br />' +
+				'<br />AMD Reorder: ' + parseInt(amd_reorder) + ' Pcs </span></p>' +
+				'<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
+				'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs ' + parseFloat(i.price3).toFixed(2) + '</strong></span><span style="display: inline-block; padding-left: 18px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
 				// '<a href="item/'+ i.name +'" class="btn btn-primary stretched-link">View Item</a>' +
 				'</div>' +
 				'</div>' +
 				'</div>' +
 				'<div class="row no-gutters bg-light position-relative">' +
 				'<div class="col-md-12" style="display: grid;">' +
-				' <label for="req_qty" style="margin-left: 20px;">Enter Qty:</label>' +
-				'<input type="text" class="req_id" name="'+ i.name +'" style="width: 50px;margin-left: 90px;margin-top: -32px;">' +
-				'<button data-id="' + i.name + '" class="btn btn-primary btn-lg" onclick="get_req(this)" style="margin: 10px auto;margin-top: -40px;margin-right: 20px;">Request</button> '+
+				'<button data-id="' + i.name + '" data-qty="10" class="btn btn-primary btn-lg" onclick="get_req(this)" style="margin: 10px auto;">Request</button> '+
 				// '<a style="display: block; margin:10px" data-id="' + i.name + '" class="req_btn btn btn-primary">Request</a>' +
 				
 				'</div>' +
@@ -247,7 +264,7 @@ erpnext.ShowItems = class StockQuery {
 			j += 1;
 		})
 
-		
+		html_content += '</div>';
 		html_content += '<button onclick="topFunction()" id="to_top" title="Go to top" style="position: fixed; bottom: 20px; right: 30px; z-index: 99; font-size: 18px; border: medium none; outline: currentcolor none medium; background-color: red; color: white; cursor: pointer; padding: 5px; border-radius: 4px; display: none;">Top</button>';
 		html_content += '<script>' +
 		//Get the button
@@ -268,11 +285,7 @@ erpnext.ShowItems = class StockQuery {
 		'\n\nfunction topFunction() {' +
 		'document.body.scrollTop = 0;' +
 		'document.documentElement.scrollTop = 0;' +
-		'}' +		
-		'$("#pages").on("change", function() {' +
-			'console.log(this.value);' +
-			'fetch_and_render();' +
-		  '});' +
+		'}' +
 		'</script>';
 
 
@@ -309,21 +322,19 @@ erpnext.ShowItems = class StockQuery {
 
 		this.form.get_field('get_items').html(html_content);
 		this.form.get_field('page_str').html(page_content);
-		this.form.set_df_property("page_no", "options", page_no);
-		// this.form.get_field('page_no').append($('<option>').val('head').text('Head'));
+		this.form.set_df_property("page_no", "options", page_no);	
 	}
 }
 
-function get_items(item, item_group, category, supplier, offset, limit) {
+function get_items(item, item_group, category, offset, limit) {
 	return new Promise(function(resolve, reject){
 		try{
 			frappe.call({
-				'method': 'jintex_customization.jintex_management.page.material_request_pag.material_request_pag.get_items',
+				'method': 'jintex_customization.jintex_management.page.show_items.show_items.get_items',
 				'args': {
 					'product_id': item,
 					'item_group': item_group,
 					'category': category,
-					'supplier': supplier,
 					'offset': offset, 
 					'limit': limit
 				},
@@ -335,75 +346,59 @@ function get_items(item, item_group, category, supplier, offset, limit) {
 
 function get_req(elem){
 	var item =  $(elem).data("id");
-	var str_input = "input[name='"+ item +"']"
-	var qty =  document.querySelector(str_input).value; 
-
-	console.log(qty)
 	// var qty =  $(elem).data("qty");
 	// console.log(item + " - " + qty)
-	let pending_qty = 0
+
+	pending_qty = 0
+
 	frappe.call({
 		'method': 'jintex_customization.jintex_management.page.material_request_pag.material_request_pag.check_purchase_material',
 		'args': {
 			'product_id':item
 		},
-		'freeze': 1,
 		callback: function(res){
 			console.log(res)
 			// pending_qty = res.message
-			if(res.message > 0){
-				// frappe.msgprint("Quantity to be Received: " + res.message)
-				pending_qty = res.message;
-				frappe.confirm('Quantity to be Received: '+ pending_qty +'! Do you still want to proceed?',
-				() => {
-					create_material_request(item, qty)
-				}, () => {
-					// action to perform if No is selected
-					// frappe.msgprint("Clicked No")
-				})
-			}
-			else{
-				create_material_request(item, qty)
+			if(res.message != '0'){
+				frappe.msgprint("Quantity to be Received: " + res.message)
 			}
 		}
 	})
 
+	let d = new frappe.ui.Dialog({
+		title: 'Enter Quantity',
+		fields: [
+			{
+				label: 'Qty',
+				fieldname: 'qty',
+				fieldtype: 'Int'
+			}
+		],
+		primary_action_label: 'Submit',
+		primary_action(values) {
+			console.log(values.qty);
+			if(values.qty != null && values.qty != 0){
+				try{
+					frappe.call({
+						'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+						'args': {
+							'product_id': item,
+							'qty': values.qty,
+						},
+						callback: function(res){
+							// console.log(res.message)
+							if(res.message == "Success"){
+								frappe.msgprint("Material Request Created Successfully!")
+							}
+						}
+					});
+				} catch (e) {reject(e);}
+			}
+			d.hide();
+		}
+	});
 	
-
-	// let d = new frappe.ui.Dialog({
-	// 	title: 'Enter Quantity',
-	// 	fields: [
-	// 		{
-	// 			label: 'Qty',
-	// 			fieldname: 'qty',
-	// 			fieldtype: 'Int'
-	// 		}
-	// 	],
-	// 	primary_action_label: 'Submit',
-	// 	primary_action(values) {
-	// 		console.log(values.qty);
-	// 		if(values.qty != null && values.qty != 0){
-	// 			try{
-	// 				frappe.call({
-	// 					'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
-	// 					'args': {
-	// 						'product_id': item,
-	// 						'qty': values.qty,
-	// 					},
-	// 					callback: function(res){
-	// 						// console.log(res.message)
-	// 						if(res.message == "Success"){
-	// 							frappe.msgprint("Material Request Created Successfully!")
-	// 						}
-	// 					}
-	// 				});
-	// 			} catch (e) {reject(e);}
-	// 		}
-	// 		d.hide();
-	// 	}
-	// });
-	
-	// d.show();
+	d.show();
 
 	// try{
 	// 	frappe.call({
@@ -420,22 +415,4 @@ function get_req(elem){
 	// 		}
 	// 	});
 	// } catch (e) {reject(e);}
-}
-
-function create_material_request(item, qty){
-	try{
-		frappe.call({
-			'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
-			'args': {
-				'product_id': item,
-				'qty': qty,
-			},
-			callback: function(res){
-				// console.log(res.message)
-				if(res.message == "Success"){
-					frappe.msgprint("Material Request Created Successfully!")
-				}
-			}
-		});
-	} catch (e) {reject(e);}
 }

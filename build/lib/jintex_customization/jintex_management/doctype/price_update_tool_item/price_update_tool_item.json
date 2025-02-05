@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-08-24 13:43:46.022564",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "cost",
+  "dealer_price",
+  "retail",
+  "pricelist3",
+  "column_break_6",
+  "branch",
+  "alpha",
+  "rmb_price"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "cost",
+   "fieldtype": "Float",
+   "label": "Cost"
+  },
+  {
+   "fieldname": "dealer_price",
+   "fieldtype": "Float",
+   "label": "Dealer Price"
+  },
+  {
+   "fieldname": "retail",
+   "fieldtype": "Float",
+   "label": "Retail"
+  },
+  {
+   "fieldname": "pricelist3",
+   "fieldtype": "Float",
+   "label": "Pricelist3"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Float",
+   "label": "Branch"
+  },
+  {
+   "fieldname": "alpha",
+   "fieldtype": "Float",
+   "label": "Alpha"
+  },
+  {
+   "fieldname": "rmb_price",
+   "fieldtype": "Float",
+   "label": "RMB Price"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2022-08-30 13:41:09.247333",
+ "modified_by": "Administrator",
+ "module": "Jintex Management",
+ "name": "Price Update Tool Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

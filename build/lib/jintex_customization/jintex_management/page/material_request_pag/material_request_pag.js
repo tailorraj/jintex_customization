@@ -185,8 +185,6 @@ erpnext.ShowItems = class StockQuery {
 				blr_reorder = i.blr_reorder
 			}
 
-			let item_name = i.name
-			item_name = item_name.replaceAll("/", "%2F")
 
 			html_content += '<div class="card mb-3" style="max-width: 380px;">' +
 				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid" src="' + i.image + '" class="card-img" alt="...">' +
@@ -194,7 +192,7 @@ erpnext.ShowItems = class StockQuery {
 			  '<div class="col-md-12">' +
 				'<div class="card-body">' +
 				// '<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
-				'<h5 class="card-title"><a href="item/'+ item_name +'"><strong>' + i.item_name + '</strong></a></h5>' +
+				'<h5 class="card-title"><a href="item/'+ i.name +'"><strong>' + i.item_name + '</strong></a></h5>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Group: <strong>' + i.item_group + '</strong></h6>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Category: <strong>' + i.category + '</strong></h6>' +
 				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;"><strong>Purchase: CNY '+ parseFloat(i.cny_rate).toFixed(2) +'</strong><br />' +

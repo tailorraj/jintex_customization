@@ -33,7 +33,15 @@ class PriceUpdateTool(Document):
 				elif count == 2:
 					price_list = retail
 					rate = item.retail
-				
+				# elif count == 3:
+				# 	price_list = price3
+				# 	rate = item.pricelist3
+				# elif count == 4:
+				# 	price_list = branch
+				# 	rate = item.branch
+				# elif count == 5:
+				# 	price_list = alpha
+				# 	rate = item.alpha
 				elif count == 3:
 					price_list = primeprice
 					rate = item.prime_price		

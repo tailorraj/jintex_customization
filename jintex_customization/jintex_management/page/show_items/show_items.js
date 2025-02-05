@@ -196,6 +196,9 @@ erpnext.ShowItems = class StockQuery {
 			// 	'</div>' +
 			// '</div>';
 
+			let item_name = i.name
+			item_name = item_name.replaceAll("/", "%2F")
+
 			html_content += '<div class="card mb-3" style="max-width: 380px;">' +
 			// '<div class="row no-gutters">' +
 			//   '<div class="col-md-4" style="margin-top: auto; margin-bottom: auto; padding-left: 20px">' +
@@ -204,7 +207,7 @@ erpnext.ShowItems = class StockQuery {
 			'<div class="row no-gutters bg-light position-relative">' +
 			  '<div class="col-md-12">' +
 				'<div class="card-body">' +
-				'<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
+				'<h5 class="card-title"><a href="item/'+ item_name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Group: <strong>' + i.item_group + '</strong></h6>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Category: <strong>' + i.category + '</strong></h6>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Aliases: <strong>' + i.aliases + '</strong></h6>' +
@@ -219,8 +222,14 @@ erpnext.ShowItems = class StockQuery {
 				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
 			}
 			else{
-				html_content += 
-				'<span style="color:#FF0000; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+				if(parseInt(stk_blr) < 0){
+					html_content += 
+					'<span style="color:#D90202; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+				}
+				else{
+					html_content += 
+					'<span style="color:#207AF5; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+				}
 			}
 			
 			
@@ -232,8 +241,14 @@ erpnext.ShowItems = class StockQuery {
 				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
 			}
 			else{
-				html_content += 
-				'<span style="color:#FF0000; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+				if(parseInt(stk_amd) < 0){
+					html_content += 
+					'<span style="color:#D90202; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+				}
+				else{
+					html_content += 
+					'<span style="color:#207AF5; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+				}
 			}
 
 			let require_by = '-'

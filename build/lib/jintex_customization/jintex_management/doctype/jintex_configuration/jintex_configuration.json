@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-04-29 14:18:11.385855",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "bangalore_warehouse",
+  "ahmedabad_warehouse",
+  "dealer_pricelist",
+  "retail_pricelist",
+  "pricelist_3"
+ ],
+ "fields": [
+  {
+   "fieldname": "bangalore_warehouse",
+   "fieldtype": "Link",
+   "label": "Bangalore Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "ahmedabad_warehouse",
+   "fieldtype": "Link",
+   "label": "Ahmedabad Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "dealer_pricelist",
+   "fieldtype": "Link",
+   "label": "Dealer Pricelist",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "retail_pricelist",
+   "fieldtype": "Link",
+   "label": "Retail Pricelist",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "pricelist_3",
+   "fieldtype": "Link",
+   "label": "Pricelist 3",
+   "options": "Price List"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-09-02 17:22:41.872708",
+ "modified_by": "Administrator",
+ "module": "Jintex Management",
+ "name": "Jintex Configuration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
