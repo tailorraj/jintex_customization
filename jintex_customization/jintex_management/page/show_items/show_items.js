@@ -207,7 +207,7 @@ erpnext.ShowItems = class StockQuery {
 			'<div class="row no-gutters bg-light position-relative">' +
 			  '<div class="col-md-12">' +
 				'<div class="card-body">' +
-				'<h5 class="card-title"><strong>' + i.jintex_item_codes + '</strong></h5>' +
+				'<h3 class="card-title" style="color:#2490ef;!important"><strong >' + i.jintex_item_codes + '</strong></h3>' +
 				'<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Group: <strong>' + i.item_group + '</strong></h6>' +
 				'<h6 class="card-subtitle mb-2 text-muted">Category: <strong>' + i.category + '</strong></h6>' +
@@ -261,8 +261,8 @@ erpnext.ShowItems = class StockQuery {
 			
 			html_content +=
 				'<br />AMD Reorder: ' + parseInt(amd_reorder) + ' Pcs </span></p>' +
-				'<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
-				'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs ' + parseFloat(i.price3).toFixed(2) + '</strong></span><span style="display: inline-block; padding-left: 18px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
+				// '<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
+				// 'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs ' + parseFloat(i.price3).toFixed(2) + '</strong></span><span style="display: inline-block; padding-left: 18px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
 				// '<a href="item/'+ i.name +'" class="btn btn-primary stretched-link">View Item</a>' +
 				'</div>' +
 				'</div>' +
