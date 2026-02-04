@@ -1,30 +1,56 @@
-[build-system]
-requires = ["flit_core >=3.4,<4"]
-build-backend = "flit_core.buildapi"
-
 [project]
 name = "jintex_customization"
 authors = [
-    {name = "Raaj Tailor", email = "raaj@akhilaminc.com"}
+    { name = "Raaj Tailor", email = "raaj@akhilaminc.com"}
 ]
 description = "Stock and Purchase Management"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
-    # frappe is installed via bench init
+    # "frappe~=15.0.0" # Installed and managed by bench.
 ]
 
-[project.urls]
-Homepage = "https://github.com/tailorraj/jintex_customization"
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
 
-[tool.bench]
-frappe-version = ">=15.0.0"
+# These dependencies are only installed when developer mode is enabled
+[tool.bench.dev-dependencies]
+# package_name = "~=1.1.0"
 
-[tool.setuptools]
-zip-safe = false
-include-package-data = true
+[tool.ruff]
+line-length = 110
+target-version = "py310"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["jintex_customization*"]
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "UP",
+    "B",
+    "RUF",
+]
+ignore = [
+    "B017", # assertRaises(Exception) - should be more specific
+    "B018", # useless expression, not assigned to anything
+    "B023", # function doesn't bind loop variable - will have last iteration's value
+    "B904", # raise inside except without from
+    "E101", # indentation contains mixed spaces and tabs
+    "E402", # module level import not at top of file
+    "E501", # line too long
+    "E741", # ambiguous variable name
+    "F401", # "unused" imports
+    "F403", # can't detect undefined names from * import
+    "F405", # can't detect undefined names from * import
+    "F722", # syntax error in forward type annotation
+    "W191", # indentation contains tabs
+]
+typing-modules = ["frappe.types.DF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+docstring-code-format = true
