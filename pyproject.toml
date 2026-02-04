@@ -1,0 +1,30 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "jintex_customization"
+authors = [
+    {name = "Raaj Tailor", email = "raaj@akhilaminc.com"}
+]
+description = "Stock and Purchase Management"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # frappe is installed via bench init
+]
+
+[project.urls]
+Homepage = "https://github.com/tailorraj/jintex_customization"
+
+[tool.bench]
+frappe-version = ">=15.0.0"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["jintex_customization*"]
