@@ -1,5 +1,3 @@
-from . import __version__ as app_version
-
 app_name = "jintex_customization"
 app_title = "Jintex Management"
 app_publisher = "Raaj Tailor"
