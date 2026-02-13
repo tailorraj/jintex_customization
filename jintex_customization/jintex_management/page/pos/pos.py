@@ -15,7 +15,7 @@ def get_items(product_id=None, item_group=None, category=None, offset=0, limit=1
     if product_id:
         product_id = '%' + product_id + '%'
         # cond += "and (i.item_name like '" + product_id + "' or i.description like '" + product_id + "' or i.bangalore_bin like '" + product_id + "' or i.ahmedabad_bin like '" + product_id + "' or i.aliases like '" + product_id + "')"
-        cond += "and (i.item_name like '" + product_id + "' or i.description like '" + product_id + "' or i.bangalore_bin like '" + product_id + "' or i.ahmedabad_bin like '" + product_id + "' or i.aliases like '" + product_id + "' or i.jintex_item_codes like '" + product_id + "')"
+        cond += "and (i.item_name like '" + product_id + "' or i.description like '" + product_id + "' or i.bangalore_bin like '" + product_id + "' or i.ahmedabad_bin like '" + product_id + "' or REPLACE(i.aliases, '-', '') like '" + product_id + "' or REPLACE(i.aliases, '-', ' ') like '" + product_id + "' or REPLACE(i.jintex_item_codes, '-', '') like '" + product_id + "' or REPLACE(i.jintex_item_codes, '-', ' ') like '" + product_id + "')"
     
     if item_group:
         cond += " and" 
