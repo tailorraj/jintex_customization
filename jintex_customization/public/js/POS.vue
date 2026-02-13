@@ -563,10 +563,16 @@ export default {
   mounted() {
     this.init();
     document.addEventListener('click', this.handleClickOutside);
+    // Hide Frappe's default page header/breadcrumbs
+    const pageHead = document.querySelector('.page-head');
+    if (pageHead) pageHead.style.display = 'none';
   },
   
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
+    // Restore Frappe's default page header
+    const pageHead = document.querySelector('.page-head');
+    if (pageHead) pageHead.style.display = '';
   },
   
   methods: {
@@ -978,7 +984,7 @@ export default {
 }
 
 .jintex-pos {
-  height: 100vh;
+  height: calc(100vh);
   display: flex;
   flex-direction: column;
   background: #f5f7fa;
