@@ -1,3 +1,438 @@
+// frappe.pages['show-items'].on_page_load = function(wrapper) {
+// 	var page = frappe.ui.make_app_page({
+// 		parent: wrapper,
+// 		title: 'Inventory Report Card View',
+// 		single_column: true
+// 	});
+
+// 	new erpnext.ShowItems(page);
+// }
+
+// erpnext.ShowItems = class StockQuery {
+// 	constructor(page) {
+// 		this.page = page;
+// 		this.make_form();
+// 	}
+
+// 	async make_form() {
+// 		var total_page = 0
+// 		var page_array = []
+// 		await frappe.db.count('Item', {
+// 			filters: {
+// 				disabled: 0
+// 			}
+// 		})
+// 		.then(count => {
+// 			console.log(Math.ceil(count/15))
+// 			total_page = Math.ceil(count/15)
+			
+// 			var i = 1
+// 			while(i <= total_page){
+// 				page_array.push(i)
+// 				i++;
+// 			} 
+// 		})
+
+// 		this.form = new frappe.ui.FieldGroup({
+// 			fields: [
+// 				{
+// 					fieldtype: 'Section Break'
+// 				},
+// 				{
+// 					label: __('Search'),
+// 					fieldname: 'item_code',
+// 					fieldtype: 'Data',
+// 					change: async () => {
+// 						this.fetch_and_render()
+// 					},
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					label: __('Group'),
+// 					fieldname: 'item_group',
+// 					fieldtype: 'Link',
+// 					options: 'Item Group',
+// 					change: async () => {
+// 						this.fetch_and_render()
+// 					},
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					label: __('Category'),
+// 					fieldname: 'category',
+// 					fieldtype: 'Select',
+// 					options: ['','A', 'B', 'C'],
+// 					change: async () => {
+// 						this.fetch_and_render()
+// 					},
+// 				},	
+// 				{
+// 					fieldtype: 'Section Break'
+// 				},
+// 				{
+// 					label:"Item",
+// 					fieldtype: 'HTML',
+// 					fieldname: 'get_items'
+// 				},
+// 				{
+// 					fieldtype: 'Section Break'
+// 				},
+// 				{
+// 					label:"Page",
+// 					fieldtype: 'HTML',
+// 					fieldname: 'page_str'
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					// label:"Pages",
+// 					fieldtype: 'Select',
+// 					options: page_array,
+// 					default: 1,
+// 					fieldname: 'page_no',
+// 					change: async () => {
+// 						this.fetch_and_render()
+// 					},
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					fieldtype: 'Column Break'
+// 				},
+// 				{
+// 					fieldtype: 'Select',
+// 					options: [15, 30, 45, 60],
+// 					default: 15,
+// 					fieldname: 'page_limit',
+// 					change: async () => {
+// 						this.fetch_and_render()
+// 					},
+// 				},
+// 			],
+// 			body: this.page.body
+// 		});
+// 		this.form.make();
+// 		this.fetch_and_render();
+// 	}
+// 	fetch_and_render(){
+// 		var item_code = this.form.get_value("item_code");
+// 		var item_group = this.form.get_value("item_group");
+// 		var category = this.form.get_value("category");
+// 		var limit = this.form.get_value("page_limit");
+// 		var offset_value = this.form.get_value("page_no");
+// 		var offset = 0;
+// 		if(offset_value == null){
+// 			offset_value = 1;
+// 		}
+// 		offset = (limit * (offset_value - 1))
+// 		console.log("Offset:" + offset)
+// 		this.set_items(item_code, item_group, category, offset, offset_value, limit)
+// 	}
+
+// 	async set_items(item_code, item_group, category, offset, offset_value, limit){
+
+// 		var res = await get_items(item_code, item_group, category, offset, limit)
+// 		console.log(res)
+
+		
+
+// 		var html_content = '';
+// 		html_content += '<div class="card-deck" style= "margin-top: 10px">';
+		
+		
+// 		var j = 0;
+// 		res.message.forEach(i =>{
+// 			if((j % 3) == 0 && j != 0){
+// 				html_content += '</div>' + 
+// 				'<div class="card-deck" style= "margin-top: 10px">';
+// 			}
+// 			var stk_amd = 0
+// 			if(i.ahmedabad != null){
+// 				stk_amd = i.ahmedabad
+// 			}
+
+// 			var stk_blr = 0
+// 			if(i.banglore != null){
+// 				stk_blr = i.banglore
+// 			}
+
+// 			var blr_reorder = 0
+// 			if(i.blr_reorder != null){
+// 				blr_reorder = i.blr_reorder
+// 			}
+
+// 			var amd_reorder = 0
+// 			if(i.amd_reorder != null){
+// 				amd_reorder = i.amd_reorder
+// 			}
+
+// 			// html_content +=	'<div class="card" style="width: 18rem;">' +
+// 			// 	'<div class="card-body">' +
+// 			// 	'<div class="d-flex flex-center me-5 pt-2"><img src="'+ i.image +'" alt="" width="125" height="125"></div>' +
+// 			// 	'<div class="d-flex flex-column content-justify-center w-100">' +
+// 			// 	'<h5 class="card-title">' + i.item_name + '</h5>' +
+// 			// 	'<h6 class="card-subtitle mb-2 text-muted">Group: ' + i.item_group + '</h6>' +
+// 			// 	'<h6 class="card-subtitle mb-2 text-muted">Category: ' + i.category + '</h6>' +
+// 			// 	'<h6 class="card-subtitle mb-2 text-muted">Reorder Level: 20 Pcs</h6>' +
+// 			// 	'<p class="card-text"> ' + i.bangalore_bin + '<br />' +
+// 			// 	'Retail Price: Stock: ' + stk_blr + ' Pcs</p>' +
+// 			// 	'<p class="card-text"> ' + i.ahmedabad_bin + '<br />' +
+// 			// 	'Retail Price: Stock: ' + stk_amd + ' Pcs</p>' +
+// 			// 	'<p class="card-text">Dealer Price: Rs ' + i.dealer + '<br />' +
+// 			// 	'Retail Price: Rs ' + i.retail + '</p>' +
+// 			// 	'</div>' +
+// 			// 	'</div>' +
+// 			// '</div>';
+
+// 			let item_name = i.name
+// 			item_name = item_name.replaceAll("/", "%2F")
+
+// 			html_content += '<div class="card mb-3" style="max-width: 380px;">' +
+// 			// '<div class="row no-gutters">' +
+// 			//   '<div class="col-md-4" style="margin-top: auto; margin-bottom: auto; padding-left: 20px">' +
+// 				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid " src="' + i.image + '" class="card-img" alt="...">' +
+// 			//   '</div>' +
+// 			'<div class="row no-gutters bg-light position-relative">' +
+// 			  '<div class="col-md-12">' +
+// 				'<div class="card-body">' +
+// 				'<h3 class="card-title" style="color:#2490ef;!important"><strong >' + i.jintex_item_codes + '</strong></h3>' +
+// 				'<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
+// 				'<h6 class="card-subtitle mb-2 text-muted">Group: <strong>' + i.item_group + '</strong></h6>' +
+// 				'<h6 class="card-subtitle mb-2 text-muted">Category: <strong>' + i.category + '</strong></h6>' +
+// 				'<h6 class="card-subtitle mb-2 text-muted">Aliases: <strong>' + i.aliases + '</strong></h6>' +
+// 				'<h6 class="card-subtitle mb-2 text-muted">Sales Invoice: <strong>' + i.si_date + '</strong></h6>' +
+// 				// '<h6 class="card-subtitle mb-2 text-muted">BLR Reorder Level: ' + blr_reorder + ' Pcs</h6>' +
+// 				// '<h6 class="card-subtitle mb-2 text-muted">AMD Reorder Level: ' + amd_reorder + ' Pcs</h6>' +
+// 				// '<h6 class="card-subtitle mb-2 text-muted">Transit Date: <strong>' + i.po_name + '</strong></h6>' +
+// 				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;font-size: 14px;"><strong>' + i.bangalore_bin + '</strong><br />';
+
+// 			if(parseInt(stk_blr) >= parseInt(blr_reorder)){
+// 				html_content += 
+// 				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+// 			}
+// 			else{
+// 				if(parseInt(stk_blr) < 0){
+// 					html_content += 
+// 					'<span style="color:#D90202; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+// 				}
+// 				else{
+// 					html_content += 
+// 					'<span style="color:#207AF5; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+// 				}
+// 			}
+			
+			
+// 			html_content += 
+// 				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 55px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
+
+// 			if(parseInt(stk_amd) >= parseInt(amd_reorder)){
+// 				html_content += 
+// 				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+// 			}
+// 			else{
+// 				if(parseInt(stk_amd) < 0){
+// 					html_content += 
+// 					'<span style="color:#D90202; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+// 				}
+// 				else{
+// 					html_content += 
+// 					'<span style="color:#207AF5; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
+// 				}
+// 			}
+
+// 			let require_by = '-'
+// 			const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+// 			if(i.po_name != '-'){
+// 				let sc_datetime = new Date(i.po_name)
+// 				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth())] + "-" + sc_datetime.getFullYear()
+// 			}
+			
+// 			html_content +=
+// 				'<br />AMD Reorder: ' + parseInt(amd_reorder) + ' Pcs </span></p>' +
+// 				// '<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
+// 				// 'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs ' + parseFloat(i.price3).toFixed(2) + '</strong></span><span style="display: inline-block; padding-left: 18px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
+// 				// '<a href="item/'+ i.name +'" class="btn btn-primary stretched-link">View Item</a>' +
+// 				'</div>' +
+// 				'</div>' +
+// 				'</div>' +
+// 				'<div class="row no-gutters bg-light position-relative">' +
+// 				'<div class="col-md-12" style="display: grid;">' +
+// 				'<button data-id="' + i.name + '" data-qty="10" class="btn btn-primary btn-lg" onclick="get_req(this)" style="margin: 10px auto;">Request</button> '+
+// 				// '<a style="display: block; margin:10px" data-id="' + i.name + '" class="req_btn btn btn-primary">Request</a>' +
+				
+// 				'</div>' +
+// 			  '</div>' +
+// 			// '</div>' +
+// 		  '</div>';
+			
+// 			j += 1;
+// 		})
+
+// 		html_content += '</div>';
+// 		html_content += '<button onclick="topFunction()" id="to_top" title="Go to top" style="position: fixed; bottom: 20px; right: 30px; z-index: 99; font-size: 18px; border: medium none; outline: currentcolor none medium; background-color: red; color: white; cursor: pointer; padding: 5px; border-radius: 4px; display: none;">Top</button>';
+// 		html_content += '<script>' +
+// 		//Get the button
+// 		'var mybutton = document.getElementById("to_top");' +
+
+// 		// When the user scrolls down 20px from the top of the document, show the button
+// 		'window.onscroll = function() {scrollFunction()};' +
+
+// 		'\n\nfunction scrollFunction() {' +
+// 		'if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {' +
+// 			'mybutton.style.display = "block";' +
+// 		'} else {' +
+// 			'mybutton.style.display = "none";' +
+// 		'}' +
+// 		'}' +
+
+// 		// When the user clicks on the button, scroll to the top of the document
+// 		'\n\nfunction topFunction() {' +
+// 		'document.body.scrollTop = 0;' +
+// 		'document.documentElement.scrollTop = 0;' +
+// 		'}' +
+// 		'</script>';
+
+
+// 			// '<tr>' +
+// 			// 	'<td>Temp</td>' +
+// 			// 	'<td>Temp_Serial</td>' +
+// 			// 	'<td>Temp Qty</td>' +
+// 			// 	'<td>temp Res</td>' +
+				
+// 			// '</tr>';
+
+// 		var total_page = 0
+// 		var page_content = ""
+
+// 		await frappe.db.count('Item', {
+// 			filters: {
+// 				disabled: 0
+// 			}
+// 		})
+// 		.then(count => {
+// 			console.log(Math.ceil(count/limit))
+// 			total_page = Math.ceil(count/limit)
+// 		})
+
+		
+// 		var page = 1
+// 		var page_no = []
+// 		while(page <= total_page){
+// 			page_no.push(page)
+// 			page ++;
+// 		}
+
+// 		page_content += '</div><span>Page ' + offset_value + '/' + total_page + '</span>';
+
+// 		this.form.get_field('get_items').html(html_content);
+// 		this.form.get_field('page_str').html(page_content);
+// 		this.form.set_df_property("page_no", "options", page_no);	
+// 	}
+// }
+
+// function get_items(item, item_group, category, offset, limit) {
+// 	return new Promise(function(resolve, reject){
+// 		try{
+// 			frappe.call({
+// 				'method': 'jintex_customization.jintex_management.page.show_items.show_items.get_items',
+// 				'args': {
+// 					'product_id': item,
+// 					'item_group': item_group,
+// 					'category': category,
+// 					'offset': offset, 
+// 					'limit': limit
+// 				},
+// 				callback: resolve
+// 			});
+// 		} catch (e) {reject(e);}
+// 	});
+// }
+
+// function get_req(elem){
+// 	var item =  $(elem).data("id");
+// 	// var qty =  $(elem).data("qty");
+// 	// console.log(item + " - " + qty)
+
+// 	pending_qty = 0
+
+// 	frappe.call({
+// 		'method': 'jintex_customization.jintex_management.page.material_request_pag.material_request_pag.check_purchase_material',
+// 		'args': {
+// 			'product_id':item
+// 		},
+// 		callback: function(res){
+// 			console.log(res)
+// 			// pending_qty = res.message
+// 			if(res.message != '0'){
+// 				frappe.msgprint("Quantity to be Received: " + res.message)
+// 			}
+// 		}
+// 	})
+
+// 	let d = new frappe.ui.Dialog({
+// 		title: 'Enter Quantity',
+// 		fields: [
+// 			{
+// 				label: 'Qty',
+// 				fieldname: 'qty',
+// 				fieldtype: 'Int'
+// 			}
+// 		],
+// 		primary_action_label: 'Submit',
+// 		primary_action(values) {
+// 			console.log(values.qty);
+// 			if(values.qty != null && values.qty != 0){
+// 				try{
+// 					frappe.call({
+// 						'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+// 						'args': {
+// 							'product_id': item,
+// 							'qty': values.qty,
+// 						},
+// 						callback: function(res){
+// 							// console.log(res.message)
+// 							if(res.message == "Success"){
+// 								frappe.msgprint("Material Request Created Successfully!")
+// 							}
+// 						}
+// 					});
+// 				} catch (e) {reject(e);}
+// 			}
+// 			d.hide();
+// 		}
+// 	});
+	
+// 	d.show();
+
+// 	// try{
+// 	// 	frappe.call({
+// 	// 		'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+// 	// 		'args': {
+// 	// 			'product_id': item,
+// 	// 			'qty': qty,
+// 	// 		},
+// 	// 		callback: function(res){
+// 	// 			// console.log(res.message)
+// 	// 			if(res.message == "Success"){
+// 	// 				frappe.msgprint("Material Request Created Successfully!")
+// 	// 			}
+// 	// 		}
+// 	// 	});
+// 	// } catch (e) {reject(e);}
+// }
+
 frappe.pages['show-items'].on_page_load = function(wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -15,420 +450,725 @@ erpnext.ShowItems = class StockQuery {
 	}
 
 	async make_form() {
-		var total_page = 0
-		var page_array = []
-		await frappe.db.count('Item', {
-			filters: {
-				disabled: 0
-			}
-		})
-		.then(count => {
-			console.log(Math.ceil(count/15))
-			total_page = Math.ceil(count/15)
-			
-			var i = 1
-			while(i <= total_page){
-				page_array.push(i)
-				i++;
-			} 
-		})
+		const pageArray = await this.calculatePageArray();
 
 		this.form = new frappe.ui.FieldGroup({
-			fields: [
-				{
-					fieldtype: 'Section Break'
-				},
-				{
-					label: __('Search'),
-					fieldname: 'item_code',
-					fieldtype: 'Data',
-					change: async () => {
-						this.fetch_and_render()
-					},
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					label: __('Group'),
-					fieldname: 'item_group',
-					fieldtype: 'Link',
-					options: 'Item Group',
-					change: async () => {
-						this.fetch_and_render()
-					},
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					label: __('Category'),
-					fieldname: 'category',
-					fieldtype: 'Select',
-					options: ['','A', 'B', 'C'],
-					change: async () => {
-						this.fetch_and_render()
-					},
-				},	
-				{
-					fieldtype: 'Section Break'
-				},
-				{
-					label:"Item",
-					fieldtype: 'HTML',
-					fieldname: 'get_items'
-				},
-				{
-					fieldtype: 'Section Break'
-				},
-				{
-					label:"Page",
-					fieldtype: 'HTML',
-					fieldname: 'page_str'
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					// label:"Pages",
-					fieldtype: 'Select',
-					options: page_array,
-					default: 1,
-					fieldname: 'page_no',
-					change: async () => {
-						this.fetch_and_render()
-					},
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					fieldtype: 'Column Break'
-				},
-				{
-					fieldtype: 'Select',
-					options: [15, 30, 45, 60],
-					default: 15,
-					fieldname: 'page_limit',
-					change: async () => {
-						this.fetch_and_render()
-					},
-				},
-			],
+			fields: this.getFieldDefinitions(pageArray),
 			body: this.page.body
 		});
+		
 		this.form.make();
 		this.fetch_and_render();
 	}
-	fetch_and_render(){
-		var item_code = this.form.get_value("item_code");
-		var item_group = this.form.get_value("item_group");
-		var category = this.form.get_value("category");
-		var limit = this.form.get_value("page_limit");
-		var offset_value = this.form.get_value("page_no");
-		var offset = 0;
-		if(offset_value == null){
-			offset_value = 1;
-		}
-		offset = (limit * (offset_value - 1))
-		console.log("Offset:" + offset)
-		this.set_items(item_code, item_group, category, offset, offset_value, limit)
+
+	async calculatePageArray() {
+		const count = await frappe.db.count('Item', {
+			filters: { disabled: 0 }
+		});
+		
+		const totalPages = Math.ceil(count / 15);
+		console.log(totalPages);
+		
+		return Array.from({ length: totalPages }, (_, i) => i + 1);
 	}
 
-	async set_items(item_code, item_group, category, offset, offset_value, limit){
+	getFieldDefinitions(pageArray) {
+		return [
+			{ fieldtype: 'Section Break' },
+			{
+				label: __('Search'),
+				fieldname: 'item_code',
+				fieldtype: 'Data',
+				change: async () => this.fetch_and_render()
+			},
+			{ fieldtype: 'Column Break' },
+			{
+				label: __('Group'),
+				fieldname: 'item_group',
+				fieldtype: 'Link',
+				options: 'Item Group',
+				change: async () => this.fetch_and_render()
+			},
+			{ fieldtype: 'Column Break' },
+			{
+				label: __('Category'),
+				fieldname: 'category',
+				fieldtype: 'Select',
+				options: ['', 'A', 'B', 'C'],
+				change: async () => this.fetch_and_render()
+			},
+			{ fieldtype: 'Section Break' },
+			{
+				label: "Item",
+				fieldtype: 'HTML',
+				fieldname: 'get_items'
+			},
+			{ fieldtype: 'Section Break' },
+			{
+				label: "Page",
+				fieldtype: 'HTML',
+				fieldname: 'page_str'
+			},
+			{ fieldtype: 'Column Break' },
+			{
+				fieldtype: 'Select',
+				options: pageArray,
+				default: 1,
+				fieldname: 'page_no',
+				change: async () => this.fetch_and_render()
+			},
+			{ fieldtype: 'Column Break' },
+			{ fieldtype: 'Column Break' },
+			{ fieldtype: 'Column Break' },
+			{ fieldtype: 'Column Break' },
+			{
+				fieldtype: 'Select',
+				options: [15, 30, 45, 60],
+				default: 15,
+				fieldname: 'page_limit',
+				change: async () => this.fetch_and_render()
+			}
+		];
+	}
 
-		var res = await get_items(item_code, item_group, category, offset, limit)
-		console.log(res)
+	fetch_and_render() {
+		const formValues = this.getFormValues();
+		this.set_items(
+			formValues.item_code,
+			formValues.item_group,
+			formValues.category,
+			formValues.offset,
+			formValues.offset_value,
+			formValues.limit
+		);
+	}
 
+	getFormValues() {
+		const limit = this.form.get_value("page_limit");
+		let offset_value = this.form.get_value("page_no") || 1;
+		const offset = limit * (offset_value - 1);
 		
-
-		var html_content = '';
-		html_content += '<div class="card-deck" style= "margin-top: 10px">';
+		console.log("Offset:" + offset);
 		
+		return {
+			item_code: this.form.get_value("item_code"),
+			item_group: this.form.get_value("item_group"),
+			category: this.form.get_value("category"),
+			limit,
+			offset,
+			offset_value
+		};
+	}
+
+	async set_items(item_code, item_group, category, offset, offset_value, limit) {
+		const res = await get_items(item_code, item_group, category, offset, limit);
+		console.log(res);
+
+		const htmlContent = this.generateItemCardsHTML(res.message);
+		const pageContent = await this.generatePaginationHTML(offset_value, limit);
+		const pageNumbers = await this.calculatePageNumbers(limit);
+
+		this.form.get_field('get_items').html(htmlContent);
+		this.form.get_field('page_str').html(pageContent);
+		this.form.set_df_property("page_no", "options", pageNumbers);
+	}
+
+	generateItemCardsHTML(items) {
+		let html = this.getCardStyles();
+		html += '<div class="inventory-cards-container">';
 		
-		var j = 0;
-		res.message.forEach(i =>{
-			if((j % 3) == 0 && j != 0){
-				html_content += '</div>' + 
-				'<div class="card-deck" style= "margin-top: 10px">';
-			}
-			var stk_amd = 0
-			if(i.ahmedabad != null){
-				stk_amd = i.ahmedabad
-			}
+		items.forEach((item, index) => {
+			html += this.createItemCard(item);
+		});
 
-			var stk_blr = 0
-			if(i.banglore != null){
-				stk_blr = i.banglore
-			}
+		html += '</div>';
+		html += this.getScrollToTopButton();
+		html += this.getScrollToTopScript();
+		html += this.getRequestButtonScript();
+		
+		return html;
+	}
 
-			var blr_reorder = 0
-			if(i.blr_reorder != null){
-				blr_reorder = i.blr_reorder
-			}
-
-			var amd_reorder = 0
-			if(i.amd_reorder != null){
-				amd_reorder = i.amd_reorder
-			}
-
-			// html_content +=	'<div class="card" style="width: 18rem;">' +
-			// 	'<div class="card-body">' +
-			// 	'<div class="d-flex flex-center me-5 pt-2"><img src="'+ i.image +'" alt="" width="125" height="125"></div>' +
-			// 	'<div class="d-flex flex-column content-justify-center w-100">' +
-			// 	'<h5 class="card-title">' + i.item_name + '</h5>' +
-			// 	'<h6 class="card-subtitle mb-2 text-muted">Group: ' + i.item_group + '</h6>' +
-			// 	'<h6 class="card-subtitle mb-2 text-muted">Category: ' + i.category + '</h6>' +
-			// 	'<h6 class="card-subtitle mb-2 text-muted">Reorder Level: 20 Pcs</h6>' +
-			// 	'<p class="card-text"> ' + i.bangalore_bin + '<br />' +
-			// 	'Retail Price: Stock: ' + stk_blr + ' Pcs</p>' +
-			// 	'<p class="card-text"> ' + i.ahmedabad_bin + '<br />' +
-			// 	'Retail Price: Stock: ' + stk_amd + ' Pcs</p>' +
-			// 	'<p class="card-text">Dealer Price: Rs ' + i.dealer + '<br />' +
-			// 	'Retail Price: Rs ' + i.retail + '</p>' +
-			// 	'</div>' +
-			// 	'</div>' +
-			// '</div>';
-
-			let item_name = i.name
-			item_name = item_name.replaceAll("/", "%2F")
-
-			html_content += '<div class="card mb-3" style="max-width: 380px;">' +
-			// '<div class="row no-gutters">' +
-			//   '<div class="col-md-4" style="margin-top: auto; margin-bottom: auto; padding-left: 20px">' +
-				'<img class="card-img-top rounded" style="height: 280px;object-fit: contain; margin-top:5px;border:white;border-style:solid " src="' + i.image + '" class="card-img" alt="...">' +
-			//   '</div>' +
-			'<div class="row no-gutters bg-light position-relative">' +
-			  '<div class="col-md-12">' +
-				'<div class="card-body">' +
-				'<h3 class="card-title" style="color:#2490ef;!important"><strong >' + i.jintex_item_codes + '</strong></h3>' +
-				'<h5 class="card-title"><a href="item/'+ i.name +'" class="stretched-link"><strong>' + i.item_name + '</strong></a></h5>' +
-				'<h6 class="card-subtitle mb-2 text-muted">Group: <strong>' + i.item_group + '</strong></h6>' +
-				'<h6 class="card-subtitle mb-2 text-muted">Category: <strong>' + i.category + '</strong></h6>' +
-				'<h6 class="card-subtitle mb-2 text-muted">Aliases: <strong>' + i.aliases + '</strong></h6>' +
-				'<h6 class="card-subtitle mb-2 text-muted">Sales Invoice: <strong>' + i.si_date + '</strong></h6>' +
-				// '<h6 class="card-subtitle mb-2 text-muted">BLR Reorder Level: ' + blr_reorder + ' Pcs</h6>' +
-				// '<h6 class="card-subtitle mb-2 text-muted">AMD Reorder Level: ' + amd_reorder + ' Pcs</h6>' +
-				// '<h6 class="card-subtitle mb-2 text-muted">Transit Date: <strong>' + i.po_name + '</strong></h6>' +
-				'<p class="card-text border-top border-bottom border-dark"> <span style="display: inline-block;font-size: 14px;"><strong>' + i.bangalore_bin + '</strong><br />';
-
-			if(parseInt(stk_blr) >= parseInt(blr_reorder)){
-				html_content += 
-				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
-			}
-			else{
-				if(parseInt(stk_blr) < 0){
-					html_content += 
-					'<span style="color:#D90202; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
+	getCardStyles() {
+		return `
+			<style>
+				.inventory-cards-container {
+					display: grid;
+					grid-template-columns: repeat(3, 1fr);
+					gap: 20px;
+					padding: 20px 10px;
+					max-width: 1400px;
+					margin: 0 auto;
 				}
-				else{
-					html_content += 
-					'<span style="color:#207AF5; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_blr) + ' Pcs </span>';
-				}
-			}
-			
-			
-			html_content += 
-				'<br />BLR Reorder: ' + parseInt(blr_reorder) + ' Pcs</span><span style="display: inline-block;padding-left: 55px;font-size: 14px;"><strong>' + i.ahmedabad_bin + '</strong><br />';
-
-			if(parseInt(stk_amd) >= parseInt(amd_reorder)){
-				html_content += 
-				'<span style="color:#007500; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
-			}
-			else{
-				if(parseInt(stk_amd) < 0){
-					html_content += 
-					'<span style="color:#D90202; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
-				}
-				else{
-					html_content += 
-					'<span style="color:#207AF5; font-weight: bold;font-size: 14px;">Stock: ' + parseInt(stk_amd) + ' Pcs </span>';
-				}
-			}
-
-			let require_by = '-'
-			const month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-			if(i.po_name != '-'){
-				let sc_datetime = new Date(i.po_name)
-				require_by = sc_datetime.getDate() + "-" + month[(sc_datetime.getMonth())] + "-" + sc_datetime.getFullYear()
-			}
-			
-			html_content +=
-				'<br />AMD Reorder: ' + parseInt(amd_reorder) + ' Pcs </span></p>' +
-				// '<p class="card-text"><span style="display: inline-block;">Dealer Price: <strong>Rs ' + parseFloat(i.dealer).toFixed(2) + '</strong><br />' +
-				// 'Retail Price: <strong>Rs ' + parseFloat(i.retail).toFixed(2) + '</strong><br />Price3: <strong>Rs ' + parseFloat(i.price3).toFixed(2) + '</strong></span><span style="display: inline-block; padding-left: 18px;">Transit Date: <strong>' + require_by + '</strong><br /> Transit Qty: <strong>' + parseInt(i.po_qty) + '</strong><br />' +
-				// '<a href="item/'+ i.name +'" class="btn btn-primary stretched-link">View Item</a>' +
-				'</div>' +
-				'</div>' +
-				'</div>' +
-				'<div class="row no-gutters bg-light position-relative">' +
-				'<div class="col-md-12" style="display: grid;">' +
-				'<button data-id="' + i.name + '" data-qty="10" class="btn btn-primary btn-lg" onclick="get_req(this)" style="margin: 10px auto;">Request</button> '+
-				// '<a style="display: block; margin:10px" data-id="' + i.name + '" class="req_btn btn btn-primary">Request</a>' +
 				
-				'</div>' +
-			  '</div>' +
-			// '</div>' +
-		  '</div>';
-			
-			j += 1;
-		})
-
-		html_content += '</div>';
-		html_content += '<button onclick="topFunction()" id="to_top" title="Go to top" style="position: fixed; bottom: 20px; right: 30px; z-index: 99; font-size: 18px; border: medium none; outline: currentcolor none medium; background-color: red; color: white; cursor: pointer; padding: 5px; border-radius: 4px; display: none;">Top</button>';
-		html_content += '<script>' +
-		//Get the button
-		'var mybutton = document.getElementById("to_top");' +
-
-		// When the user scrolls down 20px from the top of the document, show the button
-		'window.onscroll = function() {scrollFunction()};' +
-
-		'\n\nfunction scrollFunction() {' +
-		'if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {' +
-			'mybutton.style.display = "block";' +
-		'} else {' +
-			'mybutton.style.display = "none";' +
-		'}' +
-		'}' +
-
-		// When the user clicks on the button, scroll to the top of the document
-		'\n\nfunction topFunction() {' +
-		'document.body.scrollTop = 0;' +
-		'document.documentElement.scrollTop = 0;' +
-		'}' +
-		'</script>';
-
-
-			// '<tr>' +
-			// 	'<td>Temp</td>' +
-			// 	'<td>Temp_Serial</td>' +
-			// 	'<td>Temp Qty</td>' +
-			// 	'<td>temp Res</td>' +
+				.inventory-card {
+					background: #ffffff;
+					border: 1px solid #e0e0e0;
+					border-radius: 8px;
+					overflow: hidden;
+					display: flex;
+					flex-direction: column;
+					height: 100%;
+					min-width: 0;
+					transition: box-shadow 0.2s ease;
+				}
 				
-			// '</tr>';
+				.inventory-card:hover {
+					box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+				}
+				
+				.card-image-container {
+					position: relative;
+					width: 100%;
+					height: 260px;
+					background: #f5f5f5;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					overflow: hidden;
+					padding: 20px;
+				}
+				
+				.card-image {
+					max-width: 100%;
+					max-height: 100%;
+					object-fit: contain;
+				}
+				
+				.card-content {
+					padding: 16px;
+					flex: 1;
+					display: flex;
+					flex-direction: column;
+				}
+				
+				.item-code {
+					color: #1976d2;
+					font-size: 16px;
+					font-weight: 700;
+					margin-bottom: 2px;
+					line-height: 1.3;
+				}
+				
+				.item-name {
+					font-size: 18px;
+					font-weight: 700;
+					color: #000000;
+					margin-bottom: 12px;
+					line-height: 1.3;
+				}
+				
+				.item-name a {
+					color: inherit;
+					text-decoration: none;
+				}
+				
+				.item-name a:hover {
+					color: #1976d2;
+				}
+				
+				.card-metadata {
+					display: flex;
+					flex-direction: column;
+					gap: 4px;
+					margin-bottom: 12px;
+					font-size: 13px;
+				}
+				
+				.metadata-item {
+					color: #424242;
+					line-height: 1.4;
+				}
+				
+				.metadata-label {
+					font-weight: 400;
+					color: #616161;
+				}
+				
+				.metadata-value {
+					font-weight: 600;
+					color: #424242;
+				}
+				
+				.stock-divider {
+					border-top: 1px solid #e0e0e0;
+					margin: 12px 0;
+				}
+				
+				.stock-info-container {
+					margin-top: auto;
+				}
+				
+				.stock-row {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					padding: 8px 0;
+				}
+				
+				.stock-location-label {
+					font-size: 13px;
+					font-weight: 600;
+					color: #424242;
+				}
+				
+				.stock-quantity {
+					font-weight: 700;
+					font-size: 14px;
+				}
+				
+				.stock-high {
+					color: #2e7d32;
+				}
+				
+				.stock-medium {
+					color: #1976d2;
+				}
+				
+				.stock-low {
+					color: #d32f2f;
+				}
+				
+				.stock-reorder {
+					font-size: 12px;
+					color: #616161;
+				}
+				
+				.transit-info {
+					margin-top: 8px;
+					padding-top: 8px;
+					font-size: 13px;
+					color: #616161;
+				}
+				
+				.transit-label {
+					font-weight: 400;
+				}
+				
+				.transit-value {
+					font-weight: 600;
+					color: #424242;
+				}
+				
+				.card-action {
+					padding: 16px;
+					background: #ffffff;
+					border-top: 1px solid #f0f0f0;
+				}
+				
+				.request-btn {
+					width: 100%;
+					padding: 10px 24px;
+					background: #1976d2;
+					color: white;
+					border: none;
+					border-radius: 4px;
+					font-size: 14px;
+					font-weight: 600;
+					cursor: pointer;
+					transition: background 0.2s ease;
+					text-transform: capitalize;
+				}
+				
+				.request-btn:hover {
+					background: #1565c0;
+				}
+				
+				.request-btn:active {
+					background: #0d47a1;
+				}
+				
+				@media (max-width: 1200px) {
+					.inventory-cards-container {
+						grid-template-columns: repeat(2, 1fr);
+						gap: 16px;
+					}
+				}
+				
+				@media (max-width: 768px) {
+					.inventory-cards-container {
+						grid-template-columns: 1fr;
+						gap: 16px;
+					}
+				}
+			</style>
+		`;
+	}
 
-		var total_page = 0
-		var page_content = ""
-
-		await frappe.db.count('Item', {
-			filters: {
-				disabled: 0
-			}
-		})
-		.then(count => {
-			console.log(Math.ceil(count/limit))
-			total_page = Math.ceil(count/limit)
-		})
-
+	createItemCard(item) {
+		const stockData = this.getStockData(item);
+		const requireBy = this.formatRequireByDate(item.po_name);
 		
-		var page = 1
-		var page_no = []
-		while(page <= total_page){
-			page_no.push(page)
-			page ++;
+		return `
+			<div class="inventory-card">
+				<div class="card-image-container">
+					<img class="card-image" src="${item.image}" alt="${item.item_name}">
+				</div>
+				
+				<div class="card-content">
+					<div class="item-code">${item.jintex_item_codes}</div>
+					<div class="item-name">
+						<a href="item/${item.name}">${item.item_name}</a>
+					</div>
+					
+					<div class="card-metadata">
+						<div class="metadata-item">
+							<span class="metadata-label">Group:</span> 
+							<span class="metadata-value">${item.item_group}</span>
+						</div>
+						<div class="metadata-item">
+							<span class="metadata-label">Category:</span> 
+							<span class="metadata-value">${item.category}</span>
+						</div>
+						${item.aliases && item.aliases !== '-' ? `
+						<div class="metadata-item">
+							<span class="metadata-label">Aliases:</span> 
+							<span class="metadata-value">${item.aliases}</span>
+						</div>
+						` : ''}
+						${item.si_date && item.si_date !== '-' ? `
+						<div class="metadata-item">
+							<span class="metadata-label">Sales Invoice:</span> 
+							<span class="metadata-value">${item.si_date}</span>
+						</div>
+						` : ''}
+					</div>
+					
+					<div class="stock-divider"></div>
+					
+					<div class="stock-info-container">
+						<div class="stock-row">
+							<span class="stock-location-label">${item.bangalore_bin}</span>
+							<span class="stock-location-label">-</span>
+						</div>
+						<div class="stock-row">
+							<span class="stock-quantity ${this.getStockClass(stockData.stk_blr, stockData.blr_reorder)}">
+								Stock: ${parseInt(stockData.stk_blr)} Pcs
+							</span>
+							<span class="stock-quantity ${this.getStockClass(stockData.stk_amd, stockData.amd_reorder)}">
+								Stock: ${parseInt(stockData.stk_amd)} Pcs
+							</span>
+						</div>
+						<div class="stock-row">
+							<span class="stock-reorder">BLR Reorder: ${parseInt(stockData.blr_reorder)} Pcs</span>
+							<span class="stock-reorder">AMD Reorder: ${parseInt(stockData.amd_reorder)} Pcs</span>
+						</div>
+						
+						<div class="transit-info">
+							<div style="display: flex; justify-content: space-between; font-size: 12px;">
+								<span class="transit-label">Transit Date: <span class="transit-value">${requireBy}</span></span>
+								<span class="transit-label">Transit Qty: <span class="transit-value">${item.po_qty ? parseInt(item.po_qty) : 0}</span></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="card-action">
+					<button data-id="${item.name}" 
+							data-qty="10" 
+							class="request-btn">
+						Request
+					</button>
+				</div>
+			</div>
+		`;
+	}
+
+	getStockData(item) {
+		return {
+			stk_amd: item.ahmedabad || 0,
+			stk_blr: item.banglore || 0,
+			blr_reorder: item.blr_reorder || 0,
+			amd_reorder: item.amd_reorder || 0
+		};
+	}
+
+	getStockClass(stock, reorder) {
+		const stockInt = parseInt(stock);
+		const reorderInt = parseInt(reorder);
+		
+		if (stockInt >= reorderInt) {
+			return 'stock-high';
+		} else if (stockInt < 0) {
+			return 'stock-low';
+		} else {
+			return 'stock-medium';
 		}
+	}
 
-		page_content += '</div><span>Page ' + offset_value + '/' + total_page + '</span>';
+	formatRequireByDate(poName) {
+		if (poName === '-') {
+			return '-';
+		}
+		
+		const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+		const date = new Date(poName);
+		
+		return `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
+	}
 
-		this.form.get_field('get_items').html(html_content);
-		this.form.get_field('page_str').html(page_content);
-		this.form.set_df_property("page_no", "options", page_no);	
+	async generatePaginationHTML(currentPage, limit) {
+		const totalPages = await this.getTotalPages(limit);
+		return `
+			<div style="padding: 20px 0; text-align: center;">
+				<span style="font-size: 16px; font-weight: 600; color: #495057;">
+					Page ${currentPage} of ${totalPages}
+				</span>
+			</div>
+		`;
+	}
+
+	async getTotalPages(limit) {
+		const count = await frappe.db.count('Item', {
+			filters: { disabled: 0 }
+		});
+		
+		return Math.ceil(count / limit);
+	}
+
+	async calculatePageNumbers(limit) {
+		const totalPages = await this.getTotalPages(limit);
+		return Array.from({ length: totalPages }, (_, i) => i + 1);
+	}
+
+	getScrollToTopButton() {
+		return `
+			<button onclick="topFunction()" 
+					id="to_top" 
+					title="Go to top" 
+					style="position: fixed; 
+						   bottom: 30px; 
+						   right: 30px; 
+						   z-index: 99; 
+						   width: 56px;
+						   height: 56px;
+						   border: none;
+						   border-radius: 50%;
+						   background: linear-gradient(135deg, #2490ef 0%, #1e7fd4 100%);
+						   color: white; 
+						   cursor: pointer;
+						   box-shadow: 0 4px 12px rgba(36, 144, 239, 0.4);
+						   font-size: 24px;
+						   display: none;
+						   transition: all 0.3s ease;">
+				↑
+			</button>
+		`;
+	}
+
+	getScrollToTopScript() {
+		return `
+			<script>
+				var mybutton = document.getElementById("to_top");
+				
+				window.onscroll = function() {
+					scrollFunction();
+				};
+				
+				function scrollFunction() {
+					if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+						mybutton.style.display = "block";
+					} else {
+						mybutton.style.display = "none";
+					}
+				}
+				
+				function topFunction() {
+					window.scrollTo({
+						top: 0,
+						behavior: 'smooth'
+					});
+				}
+				
+				// Hover effect for scroll to top button
+				mybutton.addEventListener('mouseenter', function() {
+					this.style.transform = 'translateY(-4px)';
+					this.style.boxShadow = '0 6px 16px rgba(36, 144, 239, 0.5)';
+				});
+				
+				mybutton.addEventListener('mouseleave', function() {
+					this.style.transform = 'translateY(0)';
+					this.style.boxShadow = '0 4px 12px rgba(36, 144, 239, 0.4)';
+				});
+			</script>
+		`;
+	}
+
+	getRequestButtonScript() {
+		return `
+			<script>
+				// Make sure get_req is available globally
+				if (typeof window.get_req !== 'function') {
+					window.get_req = function(elem) {
+						const item = elem.getAttribute('data-id');
+						
+						// Check pending quantity
+						frappe.call({
+							'method': 'jintex_customization.jintex_management.page.material_request_pag.material_request_pag.check_purchase_material',
+							'args': {
+								'product_id': item
+							},
+							callback: function(res) {
+								console.log(res);
+								if (res.message !== '0') {
+									frappe.msgprint("Quantity to be Received: " + res.message);
+								}
+							}
+						});
+						
+						// Show quantity dialog
+						let dialog = new frappe.ui.Dialog({
+							title: 'Enter Quantity',
+							fields: [
+								{
+									label: 'Qty',
+									fieldname: 'qty',
+									fieldtype: 'Int'
+								},
+								{
+									label:'Warehouse',
+									fieldname:'warehouse',
+									fieldtype:'Link',
+									options:'Warehouse',
+									reqd:1
+								}
+							],
+							primary_action_label: 'Submit',
+							primary_action(values) {
+								console.log(values.qty);
+								console.log(values.warehouse);
+								
+								if (values.qty && values.qty !== 0) {
+									try {
+										frappe.call({
+											'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+											'args': {
+												'product_id': item,
+												'qty': values.qty,
+												'warehouse': values.warehouse
+											},
+											callback: function(res) {
+												if (res.message === "Success") {
+													frappe.msgprint("Material Request Created Successfully!");
+												}
+											}
+										});
+									} catch (e) {
+										console.error('Error sending material request:', e);
+									}
+								}
+								
+								dialog.hide();
+							}
+						});
+						
+						dialog.show();
+					};
+				}
+				
+				// Event delegation for request buttons
+				document.addEventListener('click', function(e) {
+					if (e.target && e.target.classList.contains('request-btn')) {
+						e.preventDefault();
+						e.stopPropagation();
+						window.get_req(e.target);
+					}
+				});
+			</script>
+		`;
 	}
 }
 
 function get_items(item, item_group, category, offset, limit) {
-	return new Promise(function(resolve, reject){
-		try{
+	return new Promise(function(resolve, reject) {
+		try {
 			frappe.call({
 				'method': 'jintex_customization.jintex_management.page.show_items.show_items.get_items',
 				'args': {
 					'product_id': item,
 					'item_group': item_group,
 					'category': category,
-					'offset': offset, 
+					'offset': offset,
 					'limit': limit
 				},
 				callback: resolve
 			});
-		} catch (e) {reject(e);}
+		} catch (e) {
+			reject(e);
+		}
 	});
 }
 
-function get_req(elem){
-	var item =  $(elem).data("id");
-	// var qty =  $(elem).data("qty");
-	// console.log(item + " - " + qty)
+function get_req(elem) {
+	const item = $(elem).data("id");
+	
+	checkPendingQuantity(item);
+	showQuantityDialog(item);
+}
 
-	pending_qty = 0
-
+function checkPendingQuantity(item) {
 	frappe.call({
 		'method': 'jintex_customization.jintex_management.page.material_request_pag.material_request_pag.check_purchase_material',
 		'args': {
-			'product_id':item
+			'product_id': item
 		},
-		callback: function(res){
-			console.log(res)
-			// pending_qty = res.message
-			if(res.message != '0'){
-				frappe.msgprint("Quantity to be Received: " + res.message)
+		callback: function(res) {
+			console.log(res);
+			if (res.message !== '0') {
+				frappe.msgprint("Quantity to be Received: " + res.message);
 			}
 		}
-	})
+	});
+}
 
-	let d = new frappe.ui.Dialog({
+function showQuantityDialog(item) {
+	let dialog = new frappe.ui.Dialog({
 		title: 'Enter Quantity',
 		fields: [
 			{
 				label: 'Qty',
 				fieldname: 'qty',
 				fieldtype: 'Int'
+			},
+			{
+				label:'Warehouse',
+				fieldname:'warehouse',
+				fieldtype:'Link',
+				options:'Warehouse',
+				reqd:1
 			}
 		],
 		primary_action_label: 'Submit',
 		primary_action(values) {
 			console.log(values.qty);
-			if(values.qty != null && values.qty != 0){
-				try{
-					frappe.call({
-						'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
-						'args': {
-							'product_id': item,
-							'qty': values.qty,
-						},
-						callback: function(res){
-							// console.log(res.message)
-							if(res.message == "Success"){
-								frappe.msgprint("Material Request Created Successfully!")
-							}
-						}
-					});
-				} catch (e) {reject(e);}
+			
+			if (values.qty && values.qty !== 0) {
+				sendMaterialRequest(item, values.qty, values.warehouse);
 			}
-			d.hide();
+			
+			dialog.hide();
 		}
 	});
 	
-	d.show();
+	dialog.show();
+}
 
-	// try{
-	// 	frappe.call({
-	// 		'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
-	// 		'args': {
-	// 			'product_id': item,
-	// 			'qty': qty,
-	// 		},
-	// 		callback: function(res){
-	// 			// console.log(res.message)
-	// 			if(res.message == "Success"){
-	// 				frappe.msgprint("Material Request Created Successfully!")
-	// 			}
-	// 		}
-	// 	});
-	// } catch (e) {reject(e);}
+function sendMaterialRequest(item, qty,warehouse) {
+	try {
+		frappe.call({
+			'method': 'jintex_customization.jintex_management.page.show_items.show_items.send_material_request',
+			'args': {
+				'product_id': item,
+				'qty': qty,
+				'warehouse': warehouse
+			},
+			callback: function(res) {
+				if (res.message === "Success") {
+					frappe.msgprint("Material Request Created Successfully!");
+				}
+			}
+		});
+	} catch (e) {
+		console.error('Error sending material request:', e);
+	}
 }

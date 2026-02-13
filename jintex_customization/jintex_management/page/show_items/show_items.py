@@ -54,38 +54,90 @@ def get_items(product_id=None, item_group=None, category=None, offset=0, limit=1
         limit %(limit)s offset %(offset)s
         """ % {"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "price3_pricelist": pricelist_3, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond, "offset":offset, "limit": limit},as_dict = True)
 
+# @frappe.whitelist()
+# def send_material_request(product_id, qty):
+#     if frappe.db.exists('Material Request', {'material_request_type': 'Purchase', 'docstatus': 0}):
+#         req = frappe.db.get_value('Material Request', {'material_request_type': 'Purchase', 'docstatus': 0}, 'name')
+        
+#         doc = frappe.get_doc('Material Request', req)
+
+#         flag = False
+#         for item in doc.items:
+#             if item.item_code == product_id:
+#                 item.qty = item.qty + float(qty)
+#                 flag = True
+#                 break
+        
+#         if flag == False:
+#             row = doc.append('items', {})
+#             row.item_code = product_id
+#             row.schedule_date = doc.schedule_date
+#             row.qty = qty
+        
+#         doc.save()
+#         return "Success"
+#     else:
+#         doc = frappe.new_doc('Material Request')
+#         doc.material_request_type = "Purchase"
+#         row = doc.append('items', {})
+#         row.item_code = product_id
+#         row.schedule_date = today()
+#         row.qty = qty
+
+#         doc.insert()
+#         return "Success"
 @frappe.whitelist()
-def send_material_request(product_id, qty):
-    if frappe.db.exists('Material Request', {'material_request_type': 'Purchase', 'docstatus': 0}):
-        req = frappe.db.get_value('Material Request', {'material_request_type': 'Purchase', 'docstatus': 0}, 'name')
-        
-        doc = frappe.get_doc('Material Request', req)
+def send_material_request(product_id, qty,warehouse):
+    try:
+        qty = float(qty)
 
-        flag = False
-        for item in doc.items:
-            if item.item_code == product_id:
-                item.qty = item.qty + float(qty)
-                flag = True
-                break
-        
-        if flag == False:
-            row = doc.append('items', {})
+        # Check existing draft Purchase Material Request
+        req = frappe.db.get_value(
+            "Material Request",
+            {"material_request_type": "Purchase", "docstatus": 0},
+            "name"
+        )
+
+        if req:
+            doc = frappe.get_doc("Material Request", req)
+
+            flag = False
+            for item in doc.items:
+                if item.item_code == product_id:
+                    item.qty = (item.qty or 0) + qty
+                    flag = True
+                    break
+
+            if not flag:
+                row = doc.append("items", {})
+                row.item_code = product_id
+                row.schedule_date = doc.schedule_date
+                row.qty = qty
+                row.warehouse = warehouse
+
+            doc.save()
+
+        else:
+            doc = frappe.new_doc("Material Request")
+            doc.material_request_type = "Purchase"
+
+            row = doc.append("items", {})
             row.item_code = product_id
-            row.schedule_date = doc.schedule_date
+            row.schedule_date = today()
             row.qty = qty
-        
-        doc.save()
-        return "Success"
-    else:
-        doc = frappe.new_doc('Material Request')
-        doc.material_request_type = "Purchase"
-        row = doc.append('items', {})
-        row.item_code = product_id
-        row.schedule_date = today()
-        row.qty = qty
+            row.warehouse = warehouse
 
-        doc.insert()
+            doc.insert()
+
         return "Success"
+
+    except Exception as e:
+        frappe.log_error(
+            title="send_material_request failed",
+            message=frappe.get_traceback()
+        )
+        frappe.throw(f"Material Request creation failed: {str(e)}")
+
 
 
 @frappe.whitelist()
