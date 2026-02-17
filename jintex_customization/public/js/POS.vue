@@ -60,7 +60,7 @@
       </div>
       
       <div class="topbar-right">
-        <button class="view-orders-btn">
+        <button class="view-orders-btn" @click="goToSalesOrders()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -77,120 +77,126 @@
       <div class="items-section">
         <div class="items-grid-container">
           <div class="items-grid" :class="'grid-cols-' + gridColumns">
+            
             <div 
               v-for="item in items" 
               :key="item.name" 
               class="item-card"
             >
-              <div class="item-image-section">
+              <div class="image-section">
                 <img 
                   v-if="item.image" 
                   :src="item.image" 
                   :alt="item.item_name"
                   @error="handleImageError"
                 />
-                <div v-else class="no-image">
-                  <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
+                <div v-else class="image-placeholder">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
                   </svg>
                 </div>
               </div>
 
-              <div class="item-details">
-                <div class="item-code">{{ item.jintex_item_codes || item.name }}</div>
-                <h3 class="item-title">{{ item.item_name }}</h3>
-                
-                <div v-if="item.aliases !== '-'" class="item-aliases">
-                  Aliases : {{ item.aliases }}
-                </div>
-                
-                <div class="item-meta">
-                  <span>Item Group : {{ item.item_group }}</span>
-                </div>
-                
-                <div class="item-meta-bold">
-                  <span>Category : <strong>{{ item.category }}</strong></span>
-                </div>
+              <div class="product-info">
+                <a class="product-sku" @click.stop.prevent="openProductDetail(item)">{{ item.jintex_item_codes || item.name }}</a>
+                <div class="product-name" :title="item.item_name">{{ item.item_name }}</div>
+              </div>
 
-                <div class="stock-row">
-                  <div class="stock-card blr-card" :class="{'low-stock-card': item.banglore <= item.blr_reorder}">
-                    <div class="stock-header">{{ item.bangalore_bin || '?' }}</div>
-                    <div class="stock-quantity">Stock: {{ formatStock(item.banglore) }} Pcs</div>
-                  </div>
-                  <div class="stock-card amd-card" :class="{'low-stock-card': item.ahmedabad <= item.amd_reorder}">
-                    <div class="stock-header">{{ item.ahmedabad_bin || '?' }}</div>
-                    <div class="stock-quantity">Stock: {{ formatStock(item.ahmedabad) }} Pcs</div>
-                  </div>
+              <div class="meta-list">
+                <div class="meta-row" v-if="item.aliases && item.aliases !== '-'">
+                  <span class="meta-label">Aliases : </span>{{ item.aliases }}
                 </div>
-
-                <div v-if="item.po_qty > 0" class="transit-info">
-                  <span>Transit Quantity : {{ formatStock(item.po_qty) }} Pcs</span>
-                  <span class="transit-date">{{ formatDate(item.po_name) }}</span>
+                <div class="meta-row">
+                  <span class="meta-label">Item Group : </span>{{ item.item_group }}
                 </div>
-
-                <div class="prices-grid">
-                  <div class="price-item">
-                    <div class="price-label">Purchase</div>
-                    <div class="price-value-container">
-                        <span class="price-value">{{ formatAmount(item.purchase || 9) }}</span>
-                    </div>
-                  </div>
-                  <div class="price-item">
-                    <div class="price-label">Dealer</div>
-                    <div class="price-value-container hover-reveal">
-                      <span class="price-mask">*****</span>
-                      <span class="price-value">{{ formatAmount(item.dealer) }}</span>
-                      <button @click="copyPrice(item, item.dealer)" class="copy-btn" title="Copy">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="price-item">
-                    <div class="price-label">Prime</div>
-                    <div class="price-value-container hover-reveal">
-                      <span class="price-mask">*****</span>
-                      <span class="price-value">{{ formatAmount(item.retail) }}</span>
-                      <button @click="copyPrice(item, item.retail)" class="copy-btn" title="Copy">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="price-item">
-                    <div class="price-label">Inclusive</div>
-                    <div class="price-value-container hover-reveal">
-                      <span class="price-mask">*****</span>
-                      <span class="price-value">{{ formatAmount(item.price3 || item.retail) }}</span>
-                      <button @click="copyPrice(item, item.price3 || item.retail)" class="copy-btn" title="Copy">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="item-actions">
-                  <button @click="addToCart(item)" class="cart-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <circle cx="9" cy="21" r="1"/>
-                      <circle cx="20" cy="21" r="1"/>
-                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                    </svg>
-                  </button>
-                  <button @click="onMrqClick(item)" class="mrq-btn">MRQ</button>
+                <div class="meta-row">
+                  <span class="meta-label">Category : </span><strong>{{ item.category }}</strong>
                 </div>
               </div>
+
+              <div class="stock-section">
+                <div 
+                  class="stock-badge" 
+                  :class="item.banglore <= item.blr_reorder ? 'stock-badge-red' : 'stock-badge-green'"
+                >
+                  <div class="stock-location">{{ item.bangalore_bin || '?' }}</div>
+                  <div class="stock-count">Stock: {{ formatStock(item.banglore) }}</div>
+                </div>
+                <div 
+                  class="stock-badge"
+                  :class="item.ahmedabad <= item.amd_reorder ? 'stock-badge-red' : 'stock-badge-green'"
+                >
+                  <div class="stock-location">{{ item.ahmedabad_bin || '?' }}</div>
+                  <div class="stock-count">Stock: {{ formatStock(item.ahmedabad) }}</div>
+                </div>
+              </div>
+
+              <div class="transit-row" v-if="item.po_qty > 0">
+                <span class="transit-item">Transit Quantity : <strong>{{ formatStock(item.po_qty) }} Pcs</strong></span>
+                <span class="transit-item"><strong>{{ formatDate(item.po_name) }}</strong></span>
+              </div>
+              <div class="transit-row" v-else style="height: 19px;"></div>
+
+             <div class="divider spacer-top"></div>
+
+              <div class="price-row">
+                <div class="price-col">
+                  <span class="price-col-label">Purchase</span>
+                  <span class="price-col-value">
+                    <span class="price-col-masked">*****</span>
+                    <span class="price-col-actual">₹{{ formatAmount(item.purchase || 9) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.purchase || 9, $event)" title="Copy">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                  </span>
+                </div>
+                <div class="price-col">
+                  <span class="price-col-label">Dealer</span>
+                  <span class="price-col-value">
+                    <span class="price-col-masked">*****</span>
+                    <span class="price-col-actual">₹{{ formatAmount(item.dealer) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.dealer, $event)" title="Copy">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                  </span>
+                </div>
+                <div class="price-col">
+                  <span class="price-col-label">Prime</span>
+                  <span class="price-col-value">
+                    <span class="price-col-masked">*****</span>
+                    <span class="price-col-actual">₹{{ formatAmount(item.retail) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.retail, $event)" title="Copy">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                  </span>
+                </div>
+                <div class="price-col">
+                  <span class="price-col-label">Inclusive</span>
+                  <span class="price-col-value">
+                    <span class="price-col-masked">*****</span>
+                    <span class="price-col-actual">₹{{ formatAmount(item.price3 || item.retail) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.price3 || item.retail, $event)" title="Copy">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="actions">
+                <button class="btn-cart" @click="addToCart(item)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
+                  Add to Cart
+                </button>
+                <button class="btn-mrq" @click="onMrqClick(item)">MRQ</button>
+              </div>
             </div>
-          </div>
+            </div>
 
           <div v-if="loading" class="loading-overlay">
             <div class="spinner"></div>
@@ -257,56 +263,60 @@
 
           <div v-else class="cart-items">
             <div v-for="(item, index) in cartItems" :key="index" class="cart-item">
-              <div class="cart-item-image">
-                <img 
-                  v-if="item.image" 
-                  :src="item.image" 
-                  :alt="item.item_name"
-                />
-                <div v-else class="no-image-small">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  </svg>
-                </div>
-              </div>
               
-              <div class="cart-item-info">
-                <div class="cart-item-header">
-                  <div>
-                    <div class="cart-item-name">{{ item.item_name }}</div>
-                    <div class="cart-item-code">{{ item.item_code }}</div>
-                  </div>
-                  <button @click="removeFromCart(index)" class="remove-btn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              <div class="cart-item-top">
+                <div class="cart-item-image">
+                  <img 
+                    v-if="item.image" 
+                    :src="item.image" 
+                    :alt="item.item_name"
+                  />
+                  <div v-else class="no-image-small">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
                     </svg>
-                  </button>
+                  </div>
                 </div>
                 
-                <div v-if="item.remarks" class="cart-item-remarks">
-                  Remarks : {{ item.remarks }}
-                </div>
-                
-                <div class="cart-item-footer">
-                  <div class="quantity-selector">
-                    <button @click="decrementQuantity(index)" class="qty-btn">-</button>
-                    <input 
-                      type="number" 
-                      v-model.number="item.qty"
-                      @change="updateItemTotal(index)"
-                      class="qty-input"
-                      min="1"
-                    />
-                    <button @click="incrementQuantity(index)" class="qty-btn">+</button>
+                <div class="cart-item-details-right">
+                  <div class="cart-item-header">
+                    <div class="cart-text-group">
+                      <div class="cart-item-name" :title="item.item_name">{{ item.item_name }}</div>
+                      <div class="cart-item-code">{{ item.item_code }}</div>
+                    </div>
+                    <button @click="removeFromCart(index)" class="remove-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
                   </div>
                   
-                  <div class="cart-item-price">
-                    <span class="price-label">{{ item.qty }} Pcs</span>
-                    <span class="price-amount">₹ {{ formatAmount(item.rate) }}</span>
+                  <div v-if="item.remarks" class="cart-item-remarks">
+                    {{ item.remarks }}
                   </div>
                 </div>
               </div>
+
+              <div class="cart-item-footer-wide">
+                <div class="quantity-selector-wide">
+                  <button @click="decrementQuantity(index)" class="qty-btn">-</button>
+                  <input 
+                    type="number" 
+                    v-model.number="item.qty"
+                    @change="updateItemTotal(index)"
+                    class="qty-input"
+                    min="1"
+                  />
+                  <button @click="incrementQuantity(index)" class="qty-btn">+</button>
+                </div>
+                
+                <div class="cart-item-price">
+                  <span class="price-label">{{ item.qty }} Pcs</span>
+                  <span class="price-amount">₹ {{ formatAmount(item.rate) }}</span>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -345,109 +355,118 @@
       </div>
     </div>
 
-    <div v-if="showItemModal" class="modal-overlay" @click="closeItemModal">
-      <div class="compact-modal" @click.stop>
-        <div class="modal-header">
-          <h3>Add to Cart</h3>
-          <button @click="closeItemModal" class="modal-close">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
+    <div v-if="showItemModal" class="modal-overlay" @click.stop>
+      <div class="card" @click.stop>
+        
+        <div class="card-header">
+          <h2>Add to Cart</h2>
+          <button class="close-btn" @click="closeItemModal">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
             </svg>
           </button>
         </div>
-        
-        <div class="modal-body-compact">
-          <div class="modal-item-row">
-            <div class="modal-item-img">
-              <img 
-                v-if="currentItem.image" 
-                :src="currentItem.image" 
-                :alt="currentItem.item_name"
-              />
-              <div v-else class="no-image-sm">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                </svg>
-              </div>
-            </div>
-            
-            <div class="modal-item-details">
-              <div class="modal-item-code">{{ currentItem.jintex_item_codes || currentItem.name }}</div>
-              <div class="modal-item-name">{{ currentItem.item_name }}</div>
-              <div class="modal-stock-row">
-                <span class="stock-chip">BLR: {{ formatStock(currentItem.banglore) }}</span>
-                <span class="stock-chip">AMD: {{ formatStock(currentItem.ahmedabad) }}</span>
-              </div>
+
+        <div class="product-section">
+          <div class="product-image">
+            <img v-if="currentItem.image" :src="currentItem.image" :alt="currentItem.item_name" style="width:100%; height:100%; object-fit:cover;">
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+            </svg>
+          </div>
+          <div class="product-info">
+            <div class="product-sku">{{ currentItem.jintex_item_codes || currentItem.name }}</div>
+            <div class="product-name">{{ currentItem.item_name }}</div>
+            <div class="stock-badges">
+              <span class="badge badge-green">BLR: {{ formatStock(currentItem.banglore) }}</span>
+              <span class="badge badge-amber">AMD: {{ formatStock(currentItem.ahmedabad) }}</span>
             </div>
           </div>
+        </div>
 
-          <div class="modal-form-compact">
-            <div class="form-row">
-              <label>Price Type</label>
-              <div class="price-radios-compact">
-                <label class="radio-compact">
-                  <input type="radio" v-model="modalPriceType" value="dealer" />
-                  <span>Dealer</span>
-                  <span class="radio-price">₹{{ formatAmount(currentItem.dealer) }}</span>
-                </label>
-                <label class="radio-compact">
-                  <input type="radio" v-model="modalPriceType" value="retail" />
-                  <span>Prime</span>
-                  <span class="radio-price">₹{{ formatAmount(currentItem.retail) }}</span>
-                </label>
-                <label class="radio-compact">
-                  <input type="radio" v-model="modalPriceType" value="price3" />
-                  <span>Inclusive</span>
-                  <span class="radio-price">₹{{ formatAmount(currentItem.price3 || currentItem.retail) }}</span>
-                </label>
+        <div class="divider"></div>
+
+        <div class="section">
+          <div class="section-label">Price Type</div>
+          <div class="price-options">
+            <label class="price-option" :class="{ active: modalPriceType === 'dealer' }">
+              <input type="radio" v-model="modalPriceType" value="dealer">
+              <div class="price-left">
+                <div class="radio-outer"><div class="radio-inner"></div></div>
+                <span class="price-label">Dealer</span>
               </div>
-            </div>
+              <span class="price-value">₹{{ formatAmount(currentItem.dealer) }}</span>
+            </label>
+            <label class="price-option" :class="{ active: modalPriceType === 'retail' }">
+              <input type="radio" v-model="modalPriceType" value="retail">
+              <div class="price-left">
+                <div class="radio-outer"><div class="radio-inner"></div></div>
+                <span class="price-label">Prime</span>
+              </div>
+              <span class="price-value">₹{{ formatAmount(currentItem.retail) }}</span>
+            </label>
+            <label class="price-option" :class="{ active: modalPriceType === 'price3' }">
+              <input type="radio" v-model="modalPriceType" value="price3">
+              <div class="price-left">
+                <div class="radio-outer"><div class="radio-inner"></div></div>
+                <span class="price-label">Inclusive</span>
+              </div>
+              <span class="price-value">₹{{ formatAmount(currentItem.price3 || currentItem.retail) }}</span>
+            </label>
+          </div>
+        </div>
 
-            <div class="form-row">
-              <label>Price</label>
-              <input 
-                type="number" 
-                v-model.number="modalPrice"
-                class="input-compact"
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            <div class="form-row">
+        <div class="qty-price-block">
+          <div class="qty-price-row">
+            <div class="field-group">
               <label>Quantity</label>
-              <div class="qty-control-compact wide-qty">
-                <button @click="modalQuantity = Math.max(1, modalQuantity - 1)" class="qty-btn-sm">-</button>
-                <input type="number" v-model.number="modalQuantity" class="qty-input-sm" min="1" />
-                <button @click="modalQuantity++" class="qty-btn-sm">+</button>
+              <div class="qty-control">
+                <button class="qty-btn" @click="modalQuantity = Math.max(1, modalQuantity - 1)">−</button>
+                <input type="number" class="qty-input" v-model.number="modalQuantity" min="1">
+                <button class="qty-btn" @click="modalQuantity++">+</button>
               </div>
             </div>
-
-            <div class="form-row">
-              <label>Remarks</label>
-              <textarea 
-                v-model="modalRemarks"
-                class="textarea-compact"
-                rows="2"
-                placeholder="Optional remarks..."
-              ></textarea>
-            </div>
-
-            <div class="modal-total-compact">
-              <span>Total:</span>
-              <span class="total-value">₹ {{ (modalQuantity * modalPrice).toFixed(2) }}</span>
+            <div class="field-group">
+              <label>Price (₹)</label>
+              <input type="number" class="price-input-field" v-model.number="modalPrice" step="0.01">
             </div>
           </div>
         </div>
-        
-        <div class="modal-footer-compact">
-          <button @click="closeItemModal" class="btn-secondary-sm">Cancel</button>
-          <button @click="addToCartFromModal" class="btn-primary-sm">Add to Cart</button>
+
+        <div class="remarks-section">
+          <label>Remarks</label>
+          <textarea class="remarks-input" v-model="modalRemarks" placeholder="Optional remarks..."></textarea>
         </div>
+
+        <div class="card-footer">
+         <div class="total-section">
+            <span class="total-label">Total</span>
+            <span class="total-value" :style="{ fontSize: totalFontSize }">
+              <span class="currency">₹</span>{{ (modalQuantity * modalPrice).toFixed(2) }}
+            </span>
+          </div>
+          <div class="footer-actions">
+            <button class="btn-cancel" @click="closeItemModal">Cancel</button>
+            
+            <button class="btn-add" :class="{ success: isAddedState }" @click="addToCartFromModal">
+              <template v-if="!isAddedState">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                Add to Cart
+              </template>
+              <template v-else>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: checkPop 0.3s ease-out">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Added!
+              </template>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
-
     <div v-if="showMrqModal" class="modal-overlay" @click="closeMrqModal">
       <div class="compact-modal" @click.stop>
         <div class="modal-header">
@@ -461,7 +480,7 @@
         </div>
 
         <div class="modal-body-compact">
-          <div class="warning-box">
+          <div class="warning-box" v-if="mrqMessage !== ''">
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                <circle cx="12" cy="12" r="10"></circle>
                <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -536,7 +555,7 @@ export default {
       searchTimeout: null,
       customerSearchTimeout: null,
       
-      gridColumns: 3,
+      gridColumns: 4,
       offset: 0,
       limit: 15,
       hasMore: true,
@@ -547,7 +566,8 @@ export default {
       mrqMessage: '',
       mrqQty: 1,
       mrqWarehouse: '',
-      warehouses: [] // Fetched dynamically
+      warehouses: [],
+      isAddedState: false
     };
   },
   
@@ -557,13 +577,21 @@ export default {
     },
     totalQuantity() {
       return this.cartItems.reduce((sum, item) => sum + item.qty, 0);
-    }
+    },
+    totalFontSize() {
+        const total = (this.modalQuantity * this.modalPrice).toFixed(2);
+        const len = total.length;
+        
+        if (len > 15) return '14px'; // Very long numbers
+        if (len > 10) return '18px'; // Long numbers
+        return '24px';               // Standard size
+      }
   },
   
   mounted() {
     this.init();
     document.addEventListener('click', this.handleClickOutside);
-    // Hide Frappe's default page header/breadcrumbs
+    // Hide Frappe's default page header
     const pageHead = document.querySelector('.page-head');
     if (pageHead) pageHead.style.display = 'none';
   },
@@ -589,20 +617,16 @@ export default {
           method: 'frappe.client.get_list',
           args: {
             doctype: 'Warehouse',
-            // filters: {
-            //   status: 'Enabled'
-            // },
+            // filters: { status: 'Active' },
             fields: ['name'],
             limit_page_length: 0
           }
         });
-        
         if (response.message) {
           this.warehouses = response.message.map(w => w.name);
         }
       } catch (error) {
         console.error('Failed to load warehouses:', error);
-        frappe.msgprint('Could not fetch active warehouses');
       }
     },
     
@@ -648,13 +672,11 @@ export default {
         });
         
         const newItems = response.message || [];
-        
         if (reset) {
           this.items = newItems;
         } else {
           this.items = [...this.items, ...newItems];
         }
-        
         this.hasMore = newItems.length === this.limit;
         
       } catch (error) {
@@ -730,76 +752,75 @@ export default {
       this.showItemModal = true;
     },
     
-    async copyPrice(item, price) {
-       const code = item.jintex_item_codes || item.name;
-        const textToCopy = `${code} ${item.item_name} @ ${this.formatAmount(price)}`;
+    copyPrice(item, price, event) {
+      // Animation Logic from HTML design
+      if (event && event.currentTarget) {
+        const btn = event.currentTarget;
+        btn.classList.add('copied');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = originalHtml;
+        }, 1000);
+      }
 
-        // 2. Try Modern API (HTTPS)
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(textToCopy).then(() => {
-            frappe.show_alert({ message: 'Copied!', indicator: 'green' });
-            }).catch((err) => {
-            console.error('Async: Could not copy text: ', err);
-            });
-        } 
-        // 3. Fallback for HTTP / Older Browsers
-        else {
-            const textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
-            
-            // Ensure it's not visible but part of the DOM
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "0";
-            document.body.appendChild(textArea);
-            
-            textArea.focus();
-            textArea.select();
-            
-            try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                frappe.show_alert({ message: 'Copied!', indicator: 'green' });
-            } else {
-                frappe.msgprint('Unable to copy');
-            }
-            } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
-            }
-            
-            document.body.removeChild(textArea);
+      // Clipboard Logic
+      const code = item.jintex_item_codes || item.name;
+      const textToCopy = `${code} ${item.item_name} @ ${this.formatAmount(price)}`;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).catch((err) => {
+          console.error('Async: Could not copy text: ', err);
+        });
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          console.error('Fallback: Oops, unable to copy', err);
         }
+        document.body.removeChild(textArea);
+      }
     },
     
-    addToCartFromModal() {
-      if (this.modalQuantity <= 0) {
-        frappe.msgprint('Quantity must be greater than 0');
-        return;
-      }
+    // addToCartFromModal() {
+    //   if (this.modalQuantity <= 0) {
+    //     frappe.msgprint('Quantity must be greater than 0');
+    //     return;
+    //   }
       
-      if (!this.modalPrice || this.modalPrice <= 0) {
-        frappe.msgprint('Price must be greater than 0');
-        return;
-      }
+    //   if (!this.modalPrice || this.modalPrice <= 0) {
+    //     frappe.msgprint('Price must be greater than 0');
+    //     return;
+    //   }
       
-      const cartItem = {
-        item_code: this.currentItem.name,
-        item_name: this.currentItem.item_name,
-        qty: this.modalQuantity,
-        rate: this.modalPrice,
-        amount: this.modalQuantity * this.modalPrice,
-        uom: 'Nos',
-        remarks: this.modalRemarks,
-        image: this.currentItem.image
-      };
+    //   const cartItem = {
+    //     item_code: this.currentItem.name,
+    //     item_name: this.currentItem.item_name,
+    //     qty: this.modalQuantity,
+    //     rate: this.modalPrice,
+    //     amount: this.modalQuantity * this.modalPrice,
+    //     uom: 'Nos',
+    //     remarks: this.modalRemarks,
+    //     image: this.currentItem.image
+    //   };
       
-      this.cartItems.push(cartItem);
-      this.closeItemModal();
-      frappe.show_alert({
-        message: `${this.currentItem.item_name} added to cart`,
-        indicator: 'green'
-      });
-    },
+    //   this.cartItems.push(cartItem);
+    //   frappe.show_alert({
+    //     message: `${cartItem.item_name} added to cart`,
+    //     indicator: 'green'
+    //   });
+    //   this.closeItemModal();
+      
+    // },
     
     closeItemModal() {
       this.showItemModal = false;
@@ -861,13 +882,11 @@ export default {
         // Clear cart
         this.cartItems = [];
         this.orderRemarks = '';
-        this.selectCustomer = null;
+        this.selectedCustomer = null;
+        this.customerSearch = '';
 
         const url = `/desk/print/Sales Order/${response.message.name}`;
-        
-        // 3. Open in a new tab
         window.open(url, '_blank');
-
         
       } catch (error) {
         frappe.msgprint({
@@ -892,8 +911,12 @@ export default {
             product_id: item.name
           }
         });
-        
-        this.mrqMessage = "Quantity to be Received: " + (response.message || '0');
+        if (response.message || 0) {
+            this.mrqMessage = "Quantity to be Received: " + (response.message || '0');
+          }else{
+          this.mrqMessage = '';
+          }
+    
         this.showMrqModal = true;
         
       } catch (error) {
@@ -949,7 +972,6 @@ export default {
       return parseFloat(value).toString();
     },
     
-    // Updated to always show 2 decimal places
     formatAmount(amount) {
       const val = parseFloat(amount || 0);
       return val.toFixed(2);
@@ -962,6 +984,54 @@ export default {
     
     handleImageError(e) {
       e.target.style.display = 'none';
+    },
+
+    openProductDetail(item) {
+        const encodedName = encodeURIComponent(item.name);
+        const url = `/app/item/${encodedName}`;
+        window.open(url, '_blank');
+    },
+
+    addToCartFromModal() {
+      if (this.modalQuantity <= 0) {
+        frappe.msgprint('Quantity must be greater than 0');
+        return;
+      }
+      
+      if (!this.modalPrice || this.modalPrice <= 0) {
+        frappe.msgprint('Price must be greater than 0');
+        return;
+      }
+      
+      const cartItem = {
+        item_code: this.currentItem.name,
+        item_name: this.currentItem.item_name,
+        qty: this.modalQuantity,
+        rate: this.modalPrice,
+        amount: this.modalQuantity * this.modalPrice,
+        uom: 'Nos',
+        remarks: this.modalRemarks,
+        image: this.currentItem.image
+      };
+      
+      this.cartItems.push(cartItem);
+      
+      // Animation Logic
+      this.isAddedState = true;
+      setTimeout(() => {
+        this.isAddedState = false;
+        frappe.show_alert({
+          message: `${cartItem.item_name} added to cart`,
+          indicator: 'green'
+        });
+        this.closeItemModal();
+        
+      }, 1000); // Wait 1s for animation before closing
+    },
+
+    goToSalesOrders(){
+      const url = `/app/sales-order`;
+      window.open(url, '_blank');
     }
   },
   
@@ -976,7 +1046,8 @@ export default {
 </script>
 
 <style scoped>
-/* Same base styles */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -984,14 +1055,39 @@ export default {
 }
 
 .jintex-pos {
+  /* DESIGN TOKENS */
+  --bg-page: #F0F1F5;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #F7F8FA;
+  --border: #E4E6ED;
+  --border-hover: #CCCFD9;
+  --text-primary: #1A1D2B;
+  --text-secondary: #5A5F73;
+  --text-muted: #9498AB;
+  --accent: #3B5BF5;
+  --accent-hover: #2D4CE0;
+  --green: #16A362;
+  --green-bg: #EDFAF3;
+  --green-border: #C5F0DA;
+  --green-text: #0E7B4A;
+  --red: #E5453E;
+  --red-bg: #FEF1F0;
+  --red-border: #FACBC9;
+  --red-text: #C0322C;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-card: 0 8px 40px rgba(26, 29, 43, 0.08), 0 1px 3px rgba(26, 29, 43, 0.06);
+
   height: calc(100vh);
   display: flex;
   flex-direction: column;
-  background: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg-page);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-primary);
 }
 
-/* ... Topbar styles ... */
+/* Top Bar */
 .pos-topbar {
   background: white;
   padding: 0.75rem 1.5rem;
@@ -1000,372 +1096,614 @@ export default {
   gap: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   z-index: 100;
+  border-bottom: 1px solid var(--border);
 }
 .topbar-left { flex-shrink: 0; }
-.pos-brand { font-size: 1.35rem; font-weight: 700; color: #2563eb; margin: 0; }
+.pos-brand { font-size: 1.35rem; font-weight: 700; color: var(--accent); margin: 0; }
 .topbar-center { flex: 1; display: flex; gap: 1rem; align-items: center; }
 .search-container { position: relative; flex: 1; max-width: 400px; }
-.search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
-.search-input { width: 100%; padding: 0 3rem; height: 46px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; display: flex; align-items: center; }
-.search-input:focus { outline: none; border-color: #3b82f6; }
-.clear-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: none; background: #f1f5f9; border-radius: 6px; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; }
+.search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.search-input { width: 100%; padding: 0 3rem; height: 46px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; display: flex; align-items: center; transition: 0.2s; }
+.search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 91, 245, 0.1); }
+.clear-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: none; background: var(--bg-elevated); border-radius: 6px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
 .topbar-filters { display: flex; gap: 0.75rem; align-items: center; }
-.topbar-select { padding: 0 2rem 0 1rem; height: 46px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; color: #64748b; background: white; cursor: pointer; min-width: 140px; line-height: 44px; }
-.grid-toggle { display: flex; gap: 0.25rem; background: #f1f5f9; padding: 4px; border-radius: 8px; height: 46px; align-items: center; }
-.grid-toggle-btn { padding: 0 0.75rem; height: 100%; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: #64748b; }
-.grid-toggle-btn.active { background: white; color: #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.view-orders-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem; height: 46px; background: #dbeafe; color: #1e40af; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.topbar-select { padding: 0 2rem 0 1rem; height: 46px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; color: var(--text-secondary); background: white; cursor: pointer; min-width: 140px; line-height: 44px; }
+.topbar-select:focus { outline: none; border-color: var(--accent); }
+.grid-toggle { display: flex; gap: 0.25rem; background: var(--bg-elevated); padding: 4px; border-radius: var(--radius-sm); height: 46px; align-items: center; }
+.grid-toggle-btn { padding: 0 0.75rem; height: 100%; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+.grid-toggle-btn.active { background: white; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.view-orders-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem; height: 46px; background: #dbeafe; color: #1e40af; border: none; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; cursor: pointer; }
 
 /* Content Grid */
-.pos-content {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 0;
-  overflow: hidden;
-}
-.items-section { background: white; display: flex; flex-direction: column; overflow: hidden; }
-.items-grid-container { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
-.items-grid { display: grid; gap: 1.25rem; padding: 1.5rem; }
+.pos-content { flex: 1; display: grid; grid-template-columns: 1fr 400px; gap: 0; overflow: hidden; }
+.items-section { background: var(--bg-page); display: flex; flex-direction: column; overflow: hidden; }
+.items-grid-container { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; padding: 8px; }
+.items-grid { display: grid; gap: 0.30rem; }
 .items-grid.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 .items-grid.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 
-/* Item Card Typography Updated */
+/* --- NEW ITEM CARD STYLES --- */
 .item-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  transition: all 0.2s;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.item-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #3b82f6; transform: translateY(-2px); }
+.item-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(26, 29, 43, 0.12); }
 
-.item-image-section {
-  width: 100%;
-  height: 200px; /* 1. Enforce fixed height to align grid */
-  background: #f8fafc;
+/* Image Section */
+.image-section {
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 20px;
+  height: 250px; /* Fixed height for consistency */
 }
-
-.item-image-section img { 
-  width: 100%; 
-  height: 100%; 
-  object-fit: contain; /* 2. Ensures image is fully visible & centered */
+.image-section img {
+  width: 210px;
+  height: 210px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
 }
-.no-image { color: #cbd5e1; }
-
-.item-details { padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-
-/* Item Code: Large, Bold, Purple/Blue */
-.item-code {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #4f46e5; /* Indigo-600 */
-  margin-bottom: 0.25rem;
+.image-placeholder {
+  width: 210px;
+  height: 210px;
+  background: var(--bg-card);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.image-placeholder svg { color: var(--text-muted); }
 
-/* Item Name: Black, Bold */
-.item-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #0f172a; /* Slate-900 */
-  margin: 0;
-  line-height: 1.3;
-}
-
-.item-aliases { font-size: 0.8rem; color: #64748b; line-height: 1.4; }
-.item-meta { font-size: 0.8rem; color: #475569; }
-.item-meta-bold { font-size: 0.8rem; color: #0f172a; font-weight: 700;}
-
-/* Stock Cards - Specific Colors */
-.stock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0.5rem 0; }
-
-.stock-card {
-  border-radius: 4px;
-  padding: 0.5rem;
-  text-align: center;
-  border: 1px solid transparent;
-}
-
-/* Bangalore: Pink/Red Theme */
-.blr-card {
-  background-color: #fce7f3; /* Pink-100 */
-  color: #9d174d; /* Pink-800 */
-  border-color: #fbcfe8;
-}
-
-/* Ahmedabad: Green Theme */
-.amd-card {
-  background-color: #dcfce7; /* Green-100 */
-  color: #166534; /* Green-800 */
-  border-color: #bbf7d0;
-}
-
-.stock-header {
-  font-size: 0.9rem; /* Increased size */
-  font-weight: 800;
-  margin-bottom: 0.15rem;
-}
-
-.stock-quantity {
-  font-size: 0.85rem;
+/* Product Info */
+.product-info { padding: 16px 16px 0; }
+.product-sku {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 17px;
   font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.15s;
+}
+.product-sku:hover { color: var(--accent-hover); text-decoration: underline; }
+.product-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Truncate long names */
+}
+
+/* Meta Info */
+.meta-list { padding: 0 16px 8px; display: flex; flex-direction: column; gap: 3px; }
+.meta-row { font-size: 12px; color: var(--text-secondary); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta-row strong { color: var(--text-primary); font-weight: 600; }
+.meta-label { color: var(--text-muted); font-weight: 500; }
+
+/* Stock Badges */
+.stock-section { padding: 0 16px 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stock-badge { text-align: center; padding: 3px 10px; border-radius: var(--radius-sm); transition: transform 0.15s; }
+.stock-badge:hover { transform: translateY(-1px); }
+.stock-badge-green { background: var(--green-bg); border: 1px solid var(--green-border); }
+.stock-badge-red { background: var(--red-bg); border: 1px solid var(--red-border); }
+.stock-location { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.stock-count { font-size: 15px; font-weight: 700; }
+.stock-badge-green .stock-count { color: var(--green-text); }
+.stock-badge-red .stock-count { color: var(--red-text); }
+
+/* Transit Info */
+.transit-row { padding: 2px 16px 7px; display: flex; align-items: center; justify-content: space-between; }
+.transit-item { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.transit-item strong { color: var(--text-primary); font-weight: 600; }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 0 16px; }
+.spacer-top {
+  margin-top: auto;
 }
 
 /* Prices Grid */
-.prices-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-  padding-top: 0.5rem;
-  border-top: 1px dashed #e5e7eb;
-}
-
-.price-item { text-align: center; }
-.price-label { font-size: 0.7rem; color: #64748b; font-weight: 500; display: block; margin-bottom: 0.25rem; }
-
-/* Masking Logic */
-.price-value-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 20px;
-}
-
-.price-mask {
-  display: block;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 2px;
-}
-
-.price-value {
-  display: none; /* Hidden by default */
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-/* Reveal on Hover */
-.hover-reveal:hover .price-mask { display: none; }
-.hover-reveal:hover .price-value { display: block; }
-.hover-reveal:hover .copy-btn { opacity: 1; }
+.price-row { padding: 12px 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; }
+.price-col { display: flex; flex-direction: column; gap: 3px; padding: 6px 4px; border-radius: 8px; transition: background 0.15s; }
+.price-col:hover { background: var(--bg-elevated); }
+.price-col-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.price-col-value { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.05em; user-select: none; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.price-col-masked, .price-col-actual { min-width: 36px; text-align: center; }
+.price-col-actual { display: none; }
+.price-col:hover .price-col-value .price-col-masked { display: none; }
+.price-col:hover .price-col-value .price-col-actual { display: inline; color: var(--text-primary); }
 
 .copy-btn {
-  position: absolute;
-  top: -8px;
-  right: -12px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  background: #3b82f6;
-  color: white;
-  border-radius: 3px;
-  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: none; background: var(--border); border-radius: 5px; cursor: pointer; color: var(--text-muted); padding: 0; flex-shrink: 0; transition: all 0.15s; opacity: 0; pointer-events: none;
+}
+.copy-btn:hover { background: var(--accent); color: #fff; }
+.price-col:hover .copy-btn { opacity: 1; pointer-events: auto; }
+.copy-btn.copied { background: var(--green); color: #fff; }
+
+/* Actions */
+.actions { padding: 0 16px 16px; display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.btn-cart {
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 11px 16px; border-radius: var(--radius-sm); border: none; background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.btn-cart::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%); pointer-events: none; }
+.btn-cart:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59, 91, 245, 0.25); }
+.btn-cart:active { transform: translateY(0); }
+.btn-cart svg { width: 18px; height: 18px; }
+
+.btn-mrq {
+  display: flex; align-items: center; justify-content: center; padding: 11px 20px; border-radius: var(--radius-sm); border: 1.5px solid var(--red-border); background: var(--red-bg); color: var(--red-text); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
+}
+.btn-mrq:hover { background: #FDE4E2; border-color: #F5A8A4; transform: translateY(-1px); }
+.btn-mrq:active { transform: translateY(0); }
+
+/* --- END ITEM CARD STYLES --- */
+
+/* Cart Section & Modals (Preserved from original but updated to match theme variables) */
+.cart-section { background: white; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.customer-search { position: relative; margin: 1rem; }
+.customer-input { width: 100%; padding: 0.875rem 3rem 0.875rem 3rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; transition: all 0.2s; }
+.customer-input:focus { outline: none; border-color: var(--accent); }
+.clear-customer-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: none; background: var(--bg-elevated); border-radius: 6px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+.customer-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--border); border-radius: var(--radius-sm); margin-top: 0.5rem; max-height: 300px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; }
+.customer-option { padding: 0.875rem 1rem; cursor: pointer; transition: all 0.15s; border-bottom: 1px solid var(--bg-elevated); }
+.customer-option:hover { background: var(--bg-elevated); }
+.customer-name { font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+.customer-code { font-size: 0.8rem; color: var(--text-secondary); }
+.selected-customer { margin: 0 1rem 1rem 1rem; }
+.customer-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: #dbeafe; color: #1e40af; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.9rem; }
+.cart-items-container { flex: 1; overflow-y: auto; padding: 0 1rem; }
+.empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); }
+.empty-cart p { margin-top: 1rem; color: var(--text-muted); font-size: 0.95rem; }
+/* Cart Items Container */
+.cart-items { display: flex; flex-direction: column; gap: 1rem; }
+
+/* Main Cart Item Card */
+.cart-item { 
+  background: var(--bg-card); 
+  border-radius: var(--radius-sm); 
+  border: 1px solid var(--border); 
+  display: flex; 
+  flex-direction: column; /* Stack top and footer */
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Top Section (Image + Details) */
+.cart-item-top {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 0.2s;
-  z-index: 10;
+  gap: 1rem;
+  padding: 1rem;
 }
 
-/* Actions Grid (80/20) */
-.item-actions {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+.cart-item-image { 
+  width: 64px; height: 64px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);
 }
+.cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
+.no-image-small { color: var(--text-muted); }
 
-.cart-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-}
-.cart-btn:hover { background-color: #2563eb; }
-
-.mrq-btn {
-  padding: 0.5rem;
-  background: #fecaca;
-  color: #991b1b;
-  border: 1px solid #f87171;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.mrq-btn:hover { background: #ef4444; color: white; }
-
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 2rem;
-}
-
-.compact-modal {
-  background: white;
-  border-radius: 12px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
+/* Right Side Details */
+.cart-item-details-right {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  gap: 0.5rem;
+  min-width: 0; /* Needed for text truncation */
 }
 
-.modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-.modal-header h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin: 0; }
-.modal-close { width: 32px; height: 32px; border: none; background: #f1f5f9; border-radius: 6px; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.modal-close:hover { background: #e2e8f0; }
+.cart-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.cart-text-group { flex: 1; min-width: 0; }
+.cart-item-name { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-item-code { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.125rem; font-family: 'JetBrains Mono', monospace; }
 
-.modal-body-compact { padding: 1.25rem; overflow-y: auto; max-height: calc(90vh - 140px); }
+.remove-btn { width: 28px; height: 28px; border: none; background: var(--bg-elevated); color: var(--red-text); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.remove-btn:hover { background: var(--red-bg); color: var(--red-text); }
 
-.modal-item-row { display: flex; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid #e5e7eb; }
-.modal-item-img { width: 80px; height: 80px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
-.modal-item-img img { width: 100%; height: 100%; object-fit: cover; }
-.no-image-sm { color: #cbd5e1; }
+.cart-item-remarks { font-size: 0.8rem; color: var(--text-secondary); font-style: italic; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: 4px; border-left: 3px solid var(--accent); }
 
-.modal-item-details { flex: 1; }
-.modal-item-code { font-size: 0.85rem; font-weight: 700; color: #5b21b6; margin-bottom: 0.25rem; }
-.modal-item-name { font-size: 1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem; line-height: 1.3; }
-.modal-stock-row { display: flex; gap: 0.5rem; }
-.stock-chip { padding: 0.25rem 0.5rem; background: #dbeafe; color: #1e40af; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-
-.modal-form-compact { display: flex; flex-direction: column; gap: 1rem; }
-.form-row { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-row label { font-weight: 600; color: #475569; font-size: 0.85rem; }
-
-.price-radios-compact { display: flex; flex-direction: column; gap: 0.5rem; }
-.radio-compact { display: flex; align-items: center; gap: 0.5rem; padding: 0.625rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
-.radio-compact:hover { border-color: #3b82f6; background: #f8fafc; }
-.radio-compact input[type="radio"] { cursor: pointer; }
-.radio-compact span:nth-child(2) { flex: 1; font-weight: 500; color: #1e293b; font-size: 0.9rem; }
-.radio-price { font-weight: 700; color: #3b82f6; font-size: 0.9rem; }
-
-.input-compact {
-    padding: 0 2rem 0 1rem; height: 46px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; font-weight: 600; background: white; cursor: pointer; min-width: 140px; line-height: 44px;
+/* Wide Footer Section (Below Image) */
+.cart-item-footer-wide { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 0.75rem 1rem;
+  background: var(--bg-elevated); /* Contrast background for footer */
+  border-top: 1px solid var(--border);
+  gap: 1rem;
 }
-.input-compact:focus { outline: none; border-color: #3b82f6; }
 
-.textarea-compact { padding: 0.625rem 0.75rem; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem; resize: vertical; font-family: inherit; }
-.textarea-compact:focus { outline: none; border-color: #3b82f6; }
+/* Wide Quantity Selector */
+.quantity-selector-wide {
+  display: flex;
+  align-items: center;
+  flex: 1; /* Takes available space */
+  height: 36px;
+  border: 2px solid var(--border);
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.quantity-selector-wide:focus-within { border-color: var(--accent); }
 
-.modal-total-compact { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 6px; margin-top: 0.5rem; }
-.modal-total-compact span:first-child { font-weight: 600; color: #475569; }
-.total-value { font-size: 1.5rem; font-weight: 700; color: #2563eb; }
+/* Reusing qty button/input styles adapted for wide container */
+.qty-btn { width: 36px; height: 100%; border: none; background: #f8fafc; color: var(--text-secondary); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border-right: 1px solid var(--border); }
+.qty-btn:last-child { border-right: none; border-left: 1px solid var(--border); }
+.qty-btn:hover { background: #e2e8f0; color: var(--text-primary); }
+.qty-input { flex: 1; width: 100%; height: 100%; border: none; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); background: white; padding: 0; -moz-appearance: textfield; }
+.qty-input:focus { outline: none; background: #fdfdfd; }
+.qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-.modal-footer-compact { padding: 1rem 1.25rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.75rem; justify-content: flex-end; }
+/* Price in footer */
+.cart-item-price { display: flex; flex-direction: column; align-items: flex-end; gap: 0; flex-shrink: 0; }
+.price-label { font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; }
+.price-amount { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; }
+.remarks-section { 
+  /* Matches the horizontal margin of qty-price-block (22px) */
+  padding: 0 22px 20px; 
+  width: 100%;
+  box-sizing: border-box;
+}
 
-/* Wide Qty Component */
-.qty-control-compact { display: flex; align-items: center; gap: 0.75rem; }
-.wide-qty .qty-input-sm { width: 120px; } /* Wider input */
-
-/* Buttons & Inputs */
-.qty-btn-sm { width: 36px; height: 36px; border: 2px solid #e2e8f0; background: white; border-radius: 6px; font-weight: 600; cursor: pointer; }
-.qty-input-sm { height: 36px; text-align: center; border: 2px solid #e2e8f0; border-radius: 6px; font-weight: 600; font-size: 1rem; }
-.btn-primary-sm { padding: 0.625rem 1.25rem; background: #3b82f6; color: white; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
-.btn-secondary-sm { padding: 0.625rem 1.25rem; background: #f1f5f9; color: #64748b; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
-
-/* Warning Box */
-.warning-box { background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 600; }
-.static-value { padding: 0.625rem 0.75rem; background: #f1f5f9; border-radius: 6px; color: #475569; font-weight: 600; }
-
-/* Cart Section */
-.cart-section { background: #f8fafc; border-left: 1px solid #e5e7eb; display: flex; flex-direction: column; overflow: hidden; }
-.customer-search { position: relative; margin: 1rem; }
-.customer-input { width: 100%; padding: 0.875rem 3rem 0.875rem 3rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; transition: all 0.2s; }
-.customer-input:focus { outline: none; border-color: #3b82f6; }
-.clear-customer-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: none; background: #f1f5f9; border-radius: 6px; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; }
-.customer-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #e2e8f0; border-radius: 8px; margin-top: 0.5rem; max-height: 300px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; }
-.customer-option { padding: 0.875rem 1rem; cursor: pointer; transition: all 0.15s; border-bottom: 1px solid #f1f5f9; }
-.customer-option:hover { background: #f8fafc; }
-.customer-name { font-weight: 600; color: #1e293b; margin-bottom: 0.25rem; }
-.customer-code { font-size: 0.8rem; color: #64748b; }
-.selected-customer { margin: 0 1rem 1rem 1rem; }
-.customer-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: #dbeafe; color: #1e40af; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
-.cart-items-container { flex: 1; overflow-y: auto; padding: 0 1rem; }
-.empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #cbd5e1; }
-.empty-cart p { margin-top: 1rem; color: #94a3b8; font-size: 0.95rem; }
-.cart-items { display: flex; flex-direction: column; gap: 0.75rem; }
-.cart-item { background: white; border-radius: 10px; padding: 1rem; display: flex; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.cart-item-image { width: 70px; height: 70px; flex-shrink: 0; border-radius: 6px; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
-.cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
-.no-image-small { color: #cbd5e1; }
-.cart-item-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-.cart-item-header { display: flex; justify-content: space-between; align-items: flex-start; }
-.cart-item-name { font-weight: 600; color: #1e293b; font-size: 0.9rem; line-height: 1.3; }
-.cart-item-code { font-size: 0.8rem; color: #64748b; margin-top: 0.125rem; }
-.remove-btn { width: 28px; height: 28px; border: none; background: #fee2e2; color: #991b1b; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
-.remove-btn:hover { background: #fecaca; }
-.cart-item-remarks { font-size: 0.8rem; color: #64748b; font-style: italic; background: #f8fafc; padding: 0.5rem; border-radius: 4px; }
-.cart-item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem; }
-.quantity-selector { display: flex; align-items: center; gap: 0.5rem; }
-.qty-btn { width: 28px; height: 28px; border: 2px solid #e2e8f0; background: white; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 600; color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.qty-btn:hover { border-color: #3b82f6; color: #3b82f6; }
-.qty-input { width: 50px; height: 28px; text-align: center; border: 2px solid #e2e8f0; border-radius: 4px; font-weight: 600; font-size: 0.9rem; }
-.qty-input:focus { outline: none; border-color: #3b82f6; }
-.cart-item-price { display: flex; flex-direction: column; align-items: flex-end; gap: 0.125rem; }
-.price-label { font-size: 0.75rem; color: #64748b; }
-.price-amount { font-size: 1rem; font-weight: 700; color: #1e293b; }
-.remarks-section { margin: 1rem; }
-.remarks-label { display: block; font-weight: 600; color: #475569; font-size: 0.9rem; margin-bottom: 0.5rem; }
-.remarks-textarea { width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; resize: vertical; font-family: inherit; }
-.remarks-textarea:focus { outline: none; border-color: #3b82f6; }
-.cart-summary { background: white; padding: 1.25rem 1rem; border-top: 1px solid #e5e7eb; }
+.remarks-label { display: block; font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; }
+.remarks-textarea { width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; resize: vertical; font-family: inherit; }
+.remarks-textarea:focus { outline: none; border-color: var(--accent); }
+.cart-summary { background: white; padding: 1.25rem 1rem; border-top: 1px solid var(--border); }
 .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.95rem; }
-.summary-label { color: #475569; font-weight: 500; }
-.summary-value { font-weight: 600; color: #1e293b; }
-.total-row { font-size: 1.1rem; padding-top: 0.75rem; border-top: 2px solid #e5e7eb; margin-bottom: 1rem; }
-.total-row .summary-value { font-size: 1.25rem; color: #2563eb; }
-.submit-btn { width: 100%; padding: 1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
-.submit-btn:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+.summary-label { color: var(--text-secondary); font-weight: 500; }
+.summary-value { font-weight: 600; color: var(--text-primary); }
+.total-row { font-size: 1.1rem; padding-top: 0.75rem; border-top: 2px solid var(--border); margin-bottom: 1rem; }
+.total-row .summary-value { font-size: 1.25rem; color: var(--accent); }
+.submit-btn { width: 100%; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+.submit-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
 .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Loading */
+/* Modal & General */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 2rem; }
+.compact-modal { background: white; border-radius: var(--radius-lg); max-width: 500px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+.modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+.modal-close { width: 32px; height: 32px; border: none; background: var(--bg-elevated); border-radius: 6px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.modal-close:hover { background: var(--border); }
+.modal-body-compact { padding: 1.25rem; overflow-y: auto; max-height: calc(90vh - 140px); }
+.modal-item-row { display: flex; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.modal-item-img { width: 80px; height: 80px; flex-shrink: 0; border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-elevated); display: flex; align-items: center; justify-content: center; }
+.modal-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.modal-item-details { flex: 1; }
+.modal-item-code { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 0.25rem; font-family: 'JetBrains Mono', monospace; }
+.modal-item-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1.3; }
+.modal-stock-row { display: flex; gap: 0.5rem; }
+.stock-chip { padding: 0.25rem 0.5rem; background: #dbeafe; color: #1e40af; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.modal-form-compact { display: flex; flex-direction: column; gap: 1rem; }
+.form-row { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-row label { font-weight: 600; color: var(--text-secondary); font-size: 0.85rem; }
+.price-radios-compact { display: flex; flex-direction: column; gap: 0.5rem; }
+.radio-compact { display: flex; align-items: center; gap: 0.5rem; padding: 0.625rem 0.75rem; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.radio-compact:hover { border-color: var(--accent); background: var(--bg-elevated); }
+.radio-compact input[type="radio"] { cursor: pointer; }
+.radio-compact span:nth-child(2) { flex: 1; font-weight: 500; color: var(--text-primary); font-size: 0.9rem; }
+.radio-price { font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+.input-compact { padding: 0 1rem; height: 46px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; }
+.input-compact:focus { outline: none; border-color: var(--accent); }
+.textarea-compact { padding: 0.625rem 0.75rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; resize: vertical; font-family: inherit; }
+.textarea-compact:focus { outline: none; border-color: var(--accent); }
+.modal-total-compact { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-elevated); border-radius: 6px; margin-top: 0.5rem; }
+.modal-total-compact span:first-child { font-weight: 600; color: var(--text-secondary); }
+.total-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+.modal-footer-compact { padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; justify-content: flex-end; }
+.warning-box { background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 600; }
+.static-value { padding: 0.625rem 0.75rem; background: #f1f5f9; border-radius: 6px; color: #475569; font-weight: 600; }
+.btn-secondary-sm { padding: 0.625rem 1.25rem; background: var(--bg-elevated); color: var(--text-secondary); border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
+.btn-secondary-sm:hover { background: var(--border); }
+.btn-primary-sm { padding: 0.625rem 1.25rem; background: var(--accent); color: white; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
+.btn-primary-sm:hover { background: var(--accent-hover); transform: translateY(-1px); }
 .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center; z-index: 10; }
-.spinner { width: 48px; height: 48px; border: 4px solid #f1f5f9; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner { width: 48px; height: 48px; border: 4px solid var(--bg-elevated); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .load-more-container { padding: 1.5rem; text-align: center; }
-.load-more-btn { padding: 0.75rem 2rem; background: #f1f5f9; color: #475569; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.load-more-btn:hover { background: white; border-color: #3b82f6; color: #3b82f6; }
+.load-more-btn { padding: 0.75rem 2rem; background: var(--bg-elevated); color: var(--text-secondary); border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.load-more-btn:hover { background: white; border-color: var(--accent); color: var(--accent); }
 
 /* Scrollbar */
 .items-grid-container::-webkit-scrollbar, .cart-items-container::-webkit-scrollbar, .customer-dropdown::-webkit-scrollbar, .modal-body-compact::-webkit-scrollbar { width: 8px; }
-.items-grid-container::-webkit-scrollbar-track, .cart-items-container::-webkit-scrollbar-track, .customer-dropdown::-webkit-scrollbar-track, .modal-body-compact::-webkit-scrollbar-track { background: #f1f5f9; }
+.items-grid-container::-webkit-scrollbar-track, .cart-items-container::-webkit-scrollbar-track, .customer-dropdown::-webkit-scrollbar-track, .modal-body-compact::-webkit-scrollbar-track { background: var(--bg-page); }
 .items-grid-container::-webkit-scrollbar-thumb, .cart-items-container::-webkit-scrollbar-thumb, .customer-dropdown::-webkit-scrollbar-thumb, .modal-body-compact::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.items-grid-container::-webkit-scrollbar-thumb:hover, .cart-items-container::-webkit-scrollbar-thumb:hover, .customer-dropdown::-webkit-scrollbar-thumb:hover, .modal-body-compact::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.items-grid-container::-webkit-scrollbar-thumb:hover, .cart-items-container::-webkit-scrollbar-thumb:hover, .customer-dropdown::-webkit-scrollbar-thumb:hover, .modal-body-compact::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* Responsive */
 @media (max-width: 1400px) { .items-grid.grid-cols-4 { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 1200px) { .items-grid.grid-cols-3 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 1024px) { .pos-content { grid-template-columns: 1fr; } .cart-section { display: none; } }
+
+/* --- NEW ADD TO CART DIALOG STYLES --- */
+
+/* Modal Container (The Card) */
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: cardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.card-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.close-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #F2F3F7; /* Hardcoded bg-input */
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.close-btn:hover { background: var(--border); color: var(--text-primary); }
+
+/* Product Section */
+.product-section {
+  padding: 20px 22px;
+  display: flex;
+  gap: 16px;
+  align-items: center; /* Changed from flex-start to center */
+}
+.product-image {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.product-image svg { width: 28px; height: 28px; color: var(--text-muted); }
+.product-info { flex: 1; min-width: 0; }
+.product-sku {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+.product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+.stock-badges { display: flex; gap: 6px; }
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.badge-green { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+.badge-green::before { background: var(--green-text); }
+.badge-amber { background: #FFF8EB; color: #C47E0A; border: 1px solid #FBE5B0; }
+.badge-amber::before { background: #C47E0A; }
+
+/* Price Type Section */
+.section { padding: 20px 22px; }
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.price-options { display: flex; flex-direction: column; gap: 6px; }
+.price-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.price-option:hover { border-color: var(--border-hover); }
+.price-option.active { border-color: var(--accent); background: rgba(59, 91, 245, 0.07); }
+.price-option input[type="radio"] { display: none; }
+.radio-outer {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border-hover);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+}
+.price-option.active .radio-outer { border-color: var(--accent); }
+.radio-inner {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  transform: scale(0); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.price-option.active .radio-inner { transform: scale(1); }
+.price-left { display: flex; align-items: center; gap: 11px; }
+.price-option .price-label { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.price-option.active .price-label { color: var(--text-primary); font-weight: 600; }
+.price-option .price-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text-muted); }
+.price-option.active .price-value { color: var(--text-primary); }
+
+/* Qty & Price Block */
+.qty-price-block {
+  margin: 0 22px 20px;
+  background: #F0F9F4;
+  border: 1px solid #D8F0E2;
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+.qty-price-row { display: grid; grid-template-columns: 7fr 3fr; gap: 14px; }
+.field-group label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); margin-bottom: 8px; display: block;
+}
+.qty-control {
+  display: flex; align-items: center; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); background: #FFFFFF; overflow: hidden; height: 44px; transition: border-color 0.2s;
+}
+.qty-control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 91, 245, 0.07); }
+.qty-btn {
+  width: 40px; height: 100%; border: none; background: transparent; color: var(--text-muted);
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; user-select: none;
+}
+.qty-btn:hover { background: #F2F3F7; color: var(--text-primary); }
+.qty-input {
+  flex: 1; height: 100%; border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  background: #FFF; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; font-weight: 600; text-align: center; outline: none;
+}
+.price-input-field {
+  width: 100%; height: 44px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: #FFFFFF; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; font-weight: 600; padding: 0 14px; outline: none; transition: all 0.2s;
+}
+.price-input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 91, 245, 0.07); }
+
+/* Remarks */
+.remarks-section { padding: 0 22px 20px; }
+.remarks-section label {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); margin-bottom: 8px; display: block;
+}
+/* Ensure the textarea fills the container */
+.remarks-input {
+  width: 100%;
+  height: 68px; 
+  border: 1.5px solid var(--border); 
+  border-radius: var(--radius-sm);
+  background: var(--bg-card); 
+  color: var(--text-primary); 
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; 
+  padding: 12px 14px; 
+  outline: none; 
+  resize: none; 
+  transition: all 0.2s;
+  box-sizing: border-box; /* Ensures padding doesn't expand width */
+}
+.remarks-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 91, 245, 0.07); }
+
+/* Footer */
+.card-footer {
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px; /* Adds safe space between total and buttons */
+}
+/* Total Section: Allow it to take available space but truncate if too long */
+.total-section { 
+  display: flex; 
+  flex-direction: column; 
+  min-width: 0; /* Critical for truncation to work in flexbox */
+  flex: 1;      /* Take up remaining space */
+}
+
+.total-label { 
+  font-size: 11px; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 0.06em; 
+  color: var(--text-muted); 
+  margin-bottom: 1px; 
+}
+
+/* Total Value: Handle large numbers gracefully */
+.total-value { 
+  font-family: 'JetBrains Mono', monospace; 
+  /* Font size will now be handled by inline style */
+  font-weight: 700; 
+  color: var(--text-primary); 
+  letter-spacing: -0.02em;
+  
+  /* Remove truncation to allow font scaling to work */
+  white-space: nowrap;
+  /* overflow: hidden;  <-- Removed */
+  /* text-overflow: ellipsis; <-- Removed */
+  transition: font-size 0.2s ease;
+}
+
+.total-value .currency { 
+  font-size: 16px; 
+  color: var(--text-secondary); 
+  margin-right: 1px; 
+}
+
+/* Footer Actions: Prevent shrinking */
+.footer-actions { 
+  display: flex; 
+  gap: 8px; 
+  flex-shrink: 0; /* Ensures buttons never squish or move */
+}
+.btn-cancel {
+  padding: 10px 18px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  background: var(--bg-card); color: var(--text-secondary); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.btn-add {
+  padding: 10px 22px; border-radius: var(--radius-sm); border: none; background: var(--accent);
+  color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+}
+.btn-add:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59, 91, 245, 0.25); }
+.btn-add:active { transform: translateY(0); }
+.btn-add svg { width: 16px; height: 16px; }
+.btn-add.success { background: var(--green); pointer-events: none; }
+
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
 </style>
