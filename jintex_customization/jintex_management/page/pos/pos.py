@@ -8,6 +8,10 @@ def get_items(product_id=None, item_group=None, category=None, offset=0, limit=1
     dealer_pricelist = frappe.db.get_single_value('Jintex Configuration', 'dealer_pricelist')
     retail_pricelist = frappe.db.get_single_value('Jintex Configuration', 'retail_pricelist')
     pricelist_3 = frappe.db.get_single_value('Jintex Configuration', 'pricelist_3')
+    prime_pricelist = frappe.db.get_single_value('Jintex Configuration', 'prime')
+    purchase_pricelist = frappe.db.get_single_value('Jintex Configuration', 'purchase_pricelist')
+    
+
     bangalore_warehouse = frappe.db.get_single_value('Jintex Configuration', 'bangalore_warehouse')
     ahmedabad_warehouse = frappe.db.get_single_value('Jintex Configuration', 'ahmedabad_warehouse')
 
@@ -37,9 +41,11 @@ def get_items(product_id=None, item_group=None, category=None, offset=0, limit=1
         IFNULL(i.bangalore_bin, '-') as bangalore_bin,
         IFNULL(i.ahmedabad_bin, '-') as ahmedabad_bin,
         i.image,
+        IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(purchase_pricelist)s' and ip.item_code = i.name order by ip.creation desc limit 1), '0') as purchase,
         IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(dealer_pricelist)s' and ip.item_code = i.name order by ip.creation desc limit 1), '0') as dealer,
+        IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(prime_pricelist)s' and ip.item_code = i.name order by ip.creation desc limit 1), '0') as prime,
         IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(retail_pricelist)s' and ip.item_code = i.name  order by ip.creation desc limit 1), '0') as retail,
-        IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(price3_pricelist)s' and ip.item_code = i.name  order by ip.creation desc limit 1), '0') as price3,
+        IFNULL((select ip.price_list_rate from `tabItem Price` ip where ip.price_list = '%(price3_pricelist)s' and ip.item_code = i.name  order by ip.creation desc limit 1), '0') as inclusive,
         IFNULL((select b.actual_qty from `tabBin` b where b.warehouse = '%(bangalore_warehouse)s' and b.item_code = i.name  order by b.creation desc limit 1), '0') as banglore,
         IFNULL((select b.actual_qty from `tabBin` b where b.warehouse = '%(ahmedabad_warehouse)s' and b.item_code = i.name order by b.creation desc limit 1), '0') as ahmedabad,
         IFNULL((select ir.warehouse_reorder_level from `tabItem Reorder` ir where ir.parent = i.name and ir.warehouse = '%(bangalore_warehouse)s'), '0') as blr_reorder,
@@ -53,7 +59,7 @@ def get_items(product_id=None, item_group=None, category=None, offset=0, limit=1
         i.disabled = 0
         %(cond)s
         limit %(limit)s offset %(offset)s
-        """ % {"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "price3_pricelist": pricelist_3, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond, "offset":offset, "limit": limit},as_dict = True)
+        """ % {"purchase_pricelist":purchase_pricelist,"prime_pricelist":prime_pricelist,"dealer_pricelist":dealer_pricelist, "retail_pricelist":retail_pricelist, "price3_pricelist": pricelist_3, "bangalore_warehouse":bangalore_warehouse, "ahmedabad_warehouse":ahmedabad_warehouse, "cond":cond, "offset":offset, "limit": limit},as_dict = True)
 
 @frappe.whitelist()
 def get_price_lists():
