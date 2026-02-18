@@ -146,8 +146,8 @@
                   <span class="price-col-label">Purchase</span>
                   <span class="price-col-value">
                     <span class="price-col-masked">*****</span>
-                    <span class="price-col-actual">₹{{ formatAmount(item.purchase || 9) }}</span>
-                    <button class="copy-btn" @click.stop="copyPrice(item, item.purchase || 9, $event)" title="Copy">
+                    <span class="price-col-actual">{{ formatAmount(item.purchase || 0) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.purchase || 0, $event)" title="Copy">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
                   </span>
@@ -166,8 +166,8 @@
                   <span class="price-col-label">Prime</span>
                   <span class="price-col-value">
                     <span class="price-col-masked">*****</span>
-                    <span class="price-col-actual">₹{{ formatAmount(item.retail) }}</span>
-                    <button class="copy-btn" @click.stop="copyPrice(item, item.retail, $event)" title="Copy">
+                    <span class="price-col-actual">₹{{ formatAmount(item.prime) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.prime, $event)" title="Copy">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
                   </span>
@@ -176,8 +176,8 @@
                   <span class="price-col-label">Inclusive</span>
                   <span class="price-col-value">
                     <span class="price-col-masked">*****</span>
-                    <span class="price-col-actual">₹{{ formatAmount(item.price3 || item.retail) }}</span>
-                    <button class="copy-btn" @click.stop="copyPrice(item, item.price3 || item.retail, $event)" title="Copy">
+                    <span class="price-col-actual">₹{{ formatAmount(item.inclusive || 0) }}</span>
+                    <button class="copy-btn" @click.stop="copyPrice(item, item.inclusive || 0, $event)" title="Copy">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
                   </span>
@@ -397,21 +397,21 @@
               </div>
               <span class="price-value">₹{{ formatAmount(currentItem.dealer) }}</span>
             </label>
-            <label class="price-option" :class="{ active: modalPriceType === 'retail' }">
-              <input type="radio" v-model="modalPriceType" value="retail">
+            <label class="price-option" :class="{ active: modalPriceType === 'prime' }">
+              <input type="radio" v-model="modalPriceType" value="prime">
               <div class="price-left">
                 <div class="radio-outer"><div class="radio-inner"></div></div>
                 <span class="price-label">Prime</span>
               </div>
-              <span class="price-value">₹{{ formatAmount(currentItem.retail) }}</span>
+              <span class="price-value">₹{{ formatAmount(currentItem.prime) }}</span>
             </label>
-            <label class="price-option" :class="{ active: modalPriceType === 'price3' }">
-              <input type="radio" v-model="modalPriceType" value="price3">
+            <label class="price-option" :class="{ active: modalPriceType === 'inclusive' }">
+              <input type="radio" v-model="modalPriceType" value="inclusive">
               <div class="price-left">
                 <div class="radio-outer"><div class="radio-inner"></div></div>
                 <span class="price-label">Inclusive</span>
               </div>
-              <span class="price-value">₹{{ formatAmount(currentItem.price3 || currentItem.retail) }}</span>
+              <span class="price-value">₹{{ formatAmount(currentItem.inclusive || 0) }}</span>
             </label>
           </div>
         </div>
