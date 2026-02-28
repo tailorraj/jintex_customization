@@ -12,7 +12,10 @@
   "retail_pricelist",
   "prime",
   "pricelist_3",
-  "purchase_pricelist"
+  "purchase_pricelist",
+  "section_break_ned0",
+  "enable_renaming",
+  "update_items"
  ],
  "fields": [
   {
@@ -56,12 +59,28 @@
    "fieldtype": "Link",
    "label": "Purchase Pricelist",
    "options": "Price List"
+  },
+  {
+   "fieldname": "section_break_ned0",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_renaming",
+   "fieldtype": "Check",
+   "label": "Enable Renaming"
+  },
+  {
+   "depends_on": "enable_renaming",
+   "fieldname": "update_items",
+   "fieldtype": "Button",
+   "label": "Update Items"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-02-18 13:24:16.175802",
+ "modified": "2026-02-27 18:53:06.991011",
  "modified_by": "Administrator",
  "module": "Jintex Management",
  "name": "Jintex Configuration",
